@@ -1,4 +1,4 @@
-import { MAX_NAME_LENGTH, type Item, type SortMode } from '../types';
+import { MAX_NAME_LENGTH, MAX_QUANTITY, type Item, type SortMode } from '../types';
 
 export function uid(): string {
   // randomUUID only exists in secure contexts; the fallback covers plain-http testing on a LAN.
@@ -7,8 +7,27 @@ export function uid(): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+/**
+ * Props for free-text inputs. iOS Safari ignores autocomplete="off" and offers contact AutoFill
+ * for anything it takes for a name field; it leaves fields named "search" alone.
+ */
+export const plainInput = { autoComplete: 'off', name: 'search' } as const;
+
 export function cleanName(value: string): string {
   return value.replace(/\s+/g, ' ').trim().slice(0, MAX_NAME_LENGTH);
+}
+
+/** Returns a whole quantity between 1 and MAX_QUANTITY; anything unusable becomes 1. */
+export function cleanQuantity(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 1;
+  return Math.min(Math.max(Math.round(value), 1), MAX_QUANTITY);
+}
+
+/** Splits "7x sokken" into a quantity and a name. Any other text is a name with quantity 1. */
+export function parseQuantity(input: string): { name: string; quantity: number } {
+  const match = /^\s*(\d{1,3})\s*[x×]\s+(\S.*)$/i.exec(input);
+  if (!match) return { name: input, quantity: 1 };
+  return { name: match[2], quantity: cleanQuantity(Number(match[1])) };
 }
 
 export function percent(checked: number, total: number): number {

@@ -144,7 +144,10 @@ export function ItemList({ items, sortable, onToggle, onEdit, onReorder }: Props
             <span className="checkbox" aria-hidden="true">
               <Icon name="check" size={18} />
             </span>
-            <span className="item-name">{item.name}</span>
+            <span className="item-name">
+              {item.quantity > 1 && <span className="item-qty">{item.quantity}× </span>}
+              {item.name}
+            </span>
           </label>
           <button
             type="button"

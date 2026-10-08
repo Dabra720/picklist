@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import { applyWrites, loadAll, replaceAll, type Write } from '../db/idb';
 import { showToast } from '../lib/toast';
-import { byOrder, cleanName, nextOrder, uid } from '../lib/util';
+import { byOrder, cleanName, cleanQuantity, nextOrder, uid } from '../lib/util';
 import {
   EMPTY_DATA,
   LABEL_COLORS,
@@ -58,8 +58,10 @@ function commit(data: AppData, writes: Write[]) {
 export async function initStore() {
   setState({ status: 'loading', data: EMPTY_DATA });
   try {
-    const data = await loadAll();
-    setState({ status: 'ready', data });
+    const stored = await loadAll();
+    // Items saved before quantities existed have none; they count as one.
+    const items = stored.items.map((item) => ({ ...item, quantity: cleanQuantity(item.quantity) }));
+    setState({ status: 'ready', data: { ...stored, items } });
     // Ask the browser not to evict our data under storage pressure (best effort).
     void navigator.storage?.persist?.().catch(() => undefined);
   } catch (error) {
@@ -221,7 +223,12 @@ export function deleteLabel(id: string) {
 
 // ---------- Items ----------
 
-export function addItem(listId: string, name: string, labelId: string | null): string | null {
+export function addItem(
+  listId: string,
+  name: string,
+  labelId: string | null,
+  quantity = 1,
+): string | null {
   const clean = cleanName(name);
   if (!clean) return null;
   const { data } = state;
@@ -230,6 +237,7 @@ export function addItem(listId: string, name: string, labelId: string | null): s
     listId,
     labelId,
     name: clean,
+    quantity: cleanQuantity(quantity),
     checked: false,
     order: nextOrder(data.items.filter((i) => i.listId === listId)),
   };
@@ -237,11 +245,15 @@ export function addItem(listId: string, name: string, labelId: string | null): s
   return item.id;
 }
 
-export function updateItem(id: string, patch: Partial<Pick<Item, 'name' | 'labelId' | 'checked'>>) {
+export function updateItem(
+  id: string,
+  patch: Partial<Pick<Item, 'name' | 'labelId' | 'quantity' | 'checked'>>,
+) {
   const { data } = state;
   const current = data.items.find((i) => i.id === id);
   if (!current) return;
   const updated = { ...current, ...patch };
+  updated.quantity = cleanQuantity(updated.quantity);
   if (patch.name !== undefined) {
     const clean = cleanName(patch.name);
     if (!clean) return;

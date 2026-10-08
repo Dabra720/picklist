@@ -11,6 +11,8 @@ account, geen server, en na de eerste keer laden volledig offline te gebruiken.
   verwijderen laat de items staan.
 - Items toevoegen, bewerken, verwijderen, naar een ander label verplaatsen, zoeken, sorteren en
   met de greep rechts handmatig verslepen (of met pijl omhoog/omlaag op het toetsenbord).
+- Een aantal per item: typ "7x sokken" bij het toevoegen, of pas het aantal aan via het
+  potloodje. Het item blijft één regel die je in één keer afvinkt.
 - Alles in één keer afvinken of resetten. Een reset verandert alleen de vinkjes, zodat je een
   lijst steeds opnieuw kunt gebruiken. Per ongeluk gedaan? Kies **Ongedaan maken** in de melding.
 - Dashboard met voortgangsbalk per lijst en een duidelijke markering als een lijst compleet is.
@@ -28,7 +30,7 @@ npm run dev
 
 Open daarna de getoonde URL (standaard http://localhost:5173).
 
-Op je telefoon testen tijdens het ontwikkelen kan met `npm run dev -- --host`; open dan het
+Op je telefoon testen tijdens het ontwikkelen kan met `npm run dev:phone`; open dan het
 netwerkadres dat Vite toont. Let op: installeren als app en offline gebruik werken alleen via
 HTTPS (of `localhost`), dus niet via zo'n netwerkadres. De service worker is bovendien alleen
 actief in de productiebuild.

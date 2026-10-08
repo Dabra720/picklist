@@ -4,7 +4,7 @@ import { Icon } from '../components/Icon';
 import { ProgressBar } from '../components/ProgressBar';
 import { goHome, openList } from '../lib/route';
 import { showToast } from '../lib/toast';
-import { byOrder, percent, sortItems } from '../lib/util';
+import { byOrder, parseQuantity, percent, plainInput, sortItems } from '../lib/util';
 import {
   addItem,
   checkedIds,
@@ -118,7 +118,9 @@ export function ListScreen({ list }: { list: PackList }) {
 
   const submitNewItem = (event: FormEvent) => {
     event.preventDefault();
-    if (addItem(list.id, newName, targetLabelId)) {
+    // "7x sokken" adds one item with a quantity of seven.
+    const { name, quantity } = parseQuantity(newName);
+    if (addItem(list.id, name, targetLabelId, quantity)) {
       setNewName('');
       addInput.current?.focus();
     }
@@ -253,7 +255,10 @@ export function ListScreen({ list }: { list: PackList }) {
         {total === 0 ? (
           <div className="empty empty-compact">
             <h2>Deze lijst is nog leeg</h2>
-            <p>Typ hieronder wat je wilt meenemen en tik op de plusknop.</p>
+            <p>
+              Typ hieronder wat je wilt meenemen en tik op de plusknop. Meerdere van hetzelfde? Typ
+              bijvoorbeeld "7x sokken".
+            </p>
           </div>
         ) : groups.length === 0 ? (
           <div className="empty empty-compact">
@@ -316,9 +321,9 @@ export function ListScreen({ list }: { list: PackList }) {
           type="text"
           value={newName}
           placeholder="Item toevoegen"
-          aria-label="Naam van nieuw item"
+          aria-label="Nieuw item"
           maxLength={MAX_NAME_LENGTH}
-          autoComplete="off"
+          {...plainInput}
           enterKeyHint="done"
           onChange={(event) => setNewName(event.target.value)}
         />
@@ -375,7 +380,7 @@ export function ListScreen({ list }: { list: PackList }) {
       {dialog?.kind === 'rename' && (
         <NameSheet
           title="Lijst hernoemen"
-          label="Naam"
+          label="Titel"
           initialValue={list.name}
           submitLabel="Opslaan"
           onClose={close}

@@ -21,6 +21,8 @@ export interface Item {
   listId: string;
   labelId: string | null;
   name: string;
+  /** How many of this item to pack; the item is still checked off as a whole. */
+  quantity: number;
   checked: boolean;
   order: number;
 }
@@ -48,3 +50,4 @@ export const LABEL_COLORS = [
 ];
 
 export const MAX_NAME_LENGTH = 100;
+export const MAX_QUANTITY = 999;

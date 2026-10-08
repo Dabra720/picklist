@@ -1,4 +1,4 @@
-import { cleanName } from '../lib/util';
+import { cleanName, cleanQuantity } from '../lib/util';
 import {
   LABEL_COLORS,
   SORT_MODES,
@@ -145,6 +145,7 @@ export function parseBackup(text: string): ParseResult {
         // A label from another list (or a missing one) is dropped; the item itself is kept.
         labelId: labelId !== null && labelList.get(labelId) === listId ? labelId : null,
         name,
+        quantity: cleanQuantity(record.quantity),
         checked: record.checked === true,
         order: readOrder(record, index),
       };

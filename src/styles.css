@@ -331,6 +331,24 @@ input[type='search'] {
   color: var(--text-muted);
 }
 
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stepper .btn {
+  font-size: 1.375rem;
+}
+
+.stepper-value {
+  min-width: 3ch;
+  text-align: center;
+  font-size: 1.125rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
 .button-row {
   display: flex;
   gap: 12px;
@@ -710,6 +728,16 @@ input[type='search'] {
   text-decoration: line-through;
 }
 
+.item-qty {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.item-checked .item-qty {
+  color: inherit;
+}
+
 .drag-handle {
   touch-action: none;
   cursor: grab;
@@ -806,7 +834,11 @@ input[type='search'] {
 
 .sheet-backdrop {
   position: fixed;
-  inset: 0;
+  /* Sized to the visible area so the sheet stays above the on-screen keyboard. */
+  top: var(--vv-top, 0px);
+  left: 0;
+  right: 0;
+  height: var(--vv-height, 100%);
   z-index: 50;
   display: flex;
   align-items: flex-end;
@@ -818,7 +850,7 @@ input[type='search'] {
 .sheet {
   width: 100%;
   max-width: 560px;
-  max-height: calc(100dvh - var(--safe-top) - 24px);
+  max-height: calc(var(--vv-height, 100dvh) - var(--safe-top) - 24px);
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 8px calc(16px + var(--safe-right)) calc(20px + var(--safe-bottom))

@@ -3,10 +3,12 @@ import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 import { App } from './App';
 import { applyTheme } from './lib/theme';
+import { trackVisualViewport } from './lib/viewport';
 import { initStore } from './store/store';
 import './styles.css';
 
 applyTheme();
+trackVisualViewport();
 void initStore();
 
 // Caches the app shell for offline use and picks up new versions automatically.

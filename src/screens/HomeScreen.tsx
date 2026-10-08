@@ -127,7 +127,7 @@ export function HomeScreen() {
       {dialog?.kind === 'create' && (
         <NameSheet
           title="Nieuwe paklijst"
-          label="Naam"
+          label="Titel"
           placeholder="Bijv. Weekendje weg"
           submitLabel="Lijst maken"
           onClose={close}
@@ -167,7 +167,7 @@ export function HomeScreen() {
       {dialog?.kind === 'rename' && (
         <NameSheet
           title="Lijst hernoemen"
-          label="Naam"
+          label="Titel"
           initialValue={dialog.list.name}
           submitLabel="Opslaan"
           onClose={close}

@@ -1,12 +1,13 @@
 import { useState, type FormEvent } from 'react';
 import { Icon } from '../components/Icon';
 import { Sheet } from '../components/Sheet';
-import { MAX_NAME_LENGTH, type Item, type Label } from '../types';
+import { plainInput } from '../lib/util';
+import { MAX_NAME_LENGTH, MAX_QUANTITY, type Item, type Label } from '../types';
 
 interface Props {
   item: Item;
   labels: Label[];
-  onSave: (patch: { name: string; labelId: string | null }) => void;
+  onSave: (patch: { name: string; labelId: string | null; quantity: number }) => void;
   onDelete: () => void;
   onClose: () => void;
 }
@@ -14,27 +15,55 @@ interface Props {
 export function ItemEditSheet({ item, labels, onSave, onDelete, onClose }: Props) {
   const [name, setName] = useState(item.name);
   const [labelId, setLabelId] = useState(item.labelId);
+  const [quantity, setQuantity] = useState(item.quantity);
   const valid = name.trim().length > 0;
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    if (valid) onSave({ name, labelId });
+    if (valid) onSave({ name, labelId, quantity });
   };
 
   return (
     <Sheet title="Item bewerken" onClose={onClose}>
       <form onSubmit={submit}>
         <label className="field">
-          <span>Naam</span>
+          <span>Item</span>
           <input
             type="text"
             value={name}
             maxLength={MAX_NAME_LENGTH}
-            autoComplete="off"
+            {...plainInput}
             enterKeyHint="done"
             onChange={(event) => setName(event.target.value)}
           />
         </label>
+
+        <div className="field">
+          <span id="item-quantity-title">Aantal</span>
+          <div className="stepper" role="group" aria-labelledby="item-quantity-title">
+            <button
+              type="button"
+              className="btn btn-square"
+              aria-label="Eén minder"
+              disabled={quantity <= 1}
+              onClick={() => setQuantity(quantity - 1)}
+            >
+              −
+            </button>
+            <output className="stepper-value" aria-live="polite">
+              {quantity}
+            </output>
+            <button
+              type="button"
+              className="btn btn-square"
+              aria-label="Eén meer"
+              disabled={quantity >= MAX_QUANTITY}
+              onClick={() => setQuantity(quantity + 1)}
+            >
+              +
+            </button>
+          </div>
+        </div>
 
         {labels.length > 0 && (
           <div className="field">

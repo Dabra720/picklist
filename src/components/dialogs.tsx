@@ -1,4 +1,5 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
+import { plainInput } from '../lib/util';
 import { MAX_NAME_LENGTH } from '../types';
 import { Icon, type IconName } from './Icon';
 import { Sheet } from './Sheet';
@@ -59,7 +60,7 @@ export function NameSheet({ title, label, placeholder, initialValue = '', submit
             placeholder={placeholder}
             maxLength={MAX_NAME_LENGTH}
             autoFocus
-            autoComplete="off"
+            {...plainInput}
             enterKeyHint="done"
             onFocus={(event) => event.target.select()}
             onChange={(event) => setValue(event.target.value)}

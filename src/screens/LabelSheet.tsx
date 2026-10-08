@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { ConfirmDialog } from '../components/dialogs';
 import { Icon } from '../components/Icon';
 import { Sheet } from '../components/Sheet';
+import { plainInput } from '../lib/util';
 import { createLabel, deleteLabel, updateLabel } from '../store/store';
 import { LABEL_COLORS, MAX_NAME_LENGTH, type Label } from '../types';
 
@@ -40,8 +41,8 @@ function LabelRow({ label, onDelete }: { label: Label; onDelete: () => void }) {
         type="text"
         value={name}
         maxLength={MAX_NAME_LENGTH}
-        aria-label="Labelnaam"
-        autoComplete="off"
+        aria-label="Label"
+        {...plainInput}
         enterKeyHint="done"
         onChange={(event) => setName(event.target.value)}
         onBlur={save}
@@ -94,9 +95,9 @@ export function LabelSheet({ listId, labels, itemCounts, onClose }: Props) {
           type="text"
           value={newName}
           placeholder="Nieuw label"
-          aria-label="Naam van nieuw label"
+          aria-label="Nieuw label"
           maxLength={MAX_NAME_LENGTH}
-          autoComplete="off"
+          {...plainInput}
           enterKeyHint="done"
           onChange={(event) => setNewName(event.target.value)}
         />
