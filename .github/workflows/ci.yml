@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Steps below are skipped until the project has a package-lock.json
+      - uses: actions/setup-node@v4
+        if: hashFiles('package-lock.json') != ''
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install
+        if: hashFiles('package-lock.json') != ''
+        run: npm ci
+
+      - name: Lint
+        if: hashFiles('package-lock.json') != ''
+        run: npm run lint --if-present
+
+      - name: Test
+        if: hashFiles('package-lock.json') != ''
+        run: npm test --if-present
+
+      - name: Build
+        if: hashFiles('package-lock.json') != ''
+        run: npm run build --if-present
