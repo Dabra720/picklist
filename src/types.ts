@@ -27,13 +27,22 @@ export interface Item {
   order: number;
 }
 
+export interface Note {
+  id: string;
+  title: string;
+  body: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface AppData {
   lists: PackList[];
   labels: Label[];
   items: Item[];
+  notes: Note[];
 }
 
-export const EMPTY_DATA: AppData = { lists: [], labels: [], items: [] };
+export const EMPTY_DATA: AppData = { lists: [], labels: [], items: [], notes: [] };
 
 export const SORT_MODES: SortMode[] = ['manual', 'alpha', 'unchecked'];
 
@@ -51,3 +60,4 @@ export const LABEL_COLORS = [
 
 export const MAX_NAME_LENGTH = 100;
 export const MAX_QUANTITY = 999;
+export const MAX_NOTE_LENGTH = 50_000;
