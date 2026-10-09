@@ -3,10 +3,13 @@ import type { AppData } from '../types';
 const DB_NAME = 'paklijsten';
 // Bump when the schema changes and add a migration step in `upgrade`.
 // Never delete or recreate existing stores there: user data must survive app updates.
-const DB_VERSION = 1;
+// Version history:
+//   1: lists, labels, items
+//   2: notes (added; existing stores are left untouched)
+const DB_VERSION = 2;
 
-export type StoreName = 'lists' | 'labels' | 'items';
-const STORES: StoreName[] = ['lists', 'labels', 'items'];
+export type StoreName = 'lists' | 'labels' | 'items' | 'notes';
+const STORES: StoreName[] = ['lists', 'labels', 'items', 'notes'];
 
 export interface Write {
   store: StoreName;
@@ -16,6 +19,7 @@ export interface Write {
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
+// Only adds stores that are missing, so it migrates any older version without touching data.
 function upgrade(db: IDBDatabase) {
   for (const name of STORES) {
     if (!db.objectStoreNames.contains(name)) db.createObjectStore(name, { keyPath: 'id' });
@@ -71,12 +75,13 @@ function getAll<T>(tx: IDBTransaction, store: StoreName): Promise<T[]> {
 export async function loadAll(): Promise<AppData> {
   const db = await openDb();
   const tx = db.transaction(STORES, 'readonly');
-  const [lists, labels, items] = await Promise.all([
+  const [lists, labels, items, notes] = await Promise.all([
     getAll<AppData['lists'][number]>(tx, 'lists'),
     getAll<AppData['labels'][number]>(tx, 'labels'),
     getAll<AppData['items'][number]>(tx, 'items'),
+    getAll<AppData['notes'][number]>(tx, 'notes'),
   ]);
-  return { lists, labels, items };
+  return { lists, labels, items, notes };
 }
 
 /** Applies all writes in a single transaction, so a change is saved completely or not at all. */

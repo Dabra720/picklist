@@ -17,6 +17,10 @@ const THEMES: { value: Theme; label: string }[] = [
 // Refuse absurdly large files before reading them into memory.
 const MAX_IMPORT_BYTES = 20 * 1024 * 1024;
 
+function count(n: number, one: string, many: string): string {
+  return `${n} ${n === 1 ? one : many}`;
+}
+
 export function SettingsSheet({ onClose }: { onClose: () => void }) {
   const { data } = useAppState();
   const [theme, setTheme] = useTheme();
@@ -28,7 +32,7 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
     setPending(null);
     try {
       await importData(imported);
-      showToast(`Back-up teruggezet: ${imported.lists.length} ${imported.lists.length === 1 ? 'lijst' : 'lijsten'}.`);
+      showToast(`Back-up teruggezet: ${count(imported.lists.length, 'lijst', 'lijsten')}, ${count(imported.notes.length, 'notitie', 'notities')}.`);
       onClose();
     } catch (cause) {
       console.error(cause);
@@ -49,10 +53,11 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
       const result = parseBackup(await file.text());
       if (!result.ok) {
         setError(result.error);
-      } else if (data.lists.length === 0) {
-        await runImport(result.data);
       } else {
-        setPending(result.data);
+        // Backups from before notes existed leave the notes on this device in place.
+        const imported = result.notesIncluded ? result.data : { ...result.data, notes: data.notes };
+        if (data.lists.length === 0 && data.notes.length === 0) await runImport(imported);
+        else setPending(imported);
       }
     } catch (cause) {
       console.error(cause);
@@ -89,12 +94,17 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
 
       <h3 className="section-title">Back-up</h3>
       <p className="sheet-text">
-        Je lijsten staan alleen op dit apparaat. Ze kunnen verdwijnen als je de app of de
+        Je lijsten en notities staan alleen op dit apparaat. Ze kunnen verdwijnen als je de app of de
         websitegegevens verwijdert, of als het systeem opslagruimte vrijmaakt. Bewaar daarom af en
         toe een back-up.
       </p>
       <div className="menu">
-        <button type="button" className="menu-item" onClick={onExport} disabled={data.lists.length === 0}>
+        <button
+          type="button"
+          className="menu-item"
+          onClick={onExport}
+          disabled={data.lists.length === 0 && data.notes.length === 0}
+        >
           <Icon name="download" />
           Back-up exporteren
         </button>
@@ -120,12 +130,9 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
         <ConfirmDialog
           title="Gegevens overschrijven?"
           message={
-            <>
-              Je huidige {data.lists.length} {data.lists.length === 1 ? 'lijst wordt' : 'lijsten worden'}{' '}
-              vervangen door {pending.lists.length}{' '}
-              {pending.lists.length === 1 ? 'lijst' : 'lijsten'} uit de back-up. Dit kan niet ongedaan
-              worden gemaakt.
-            </>
+            pending.notes === data.notes
+              ? `Je huidige ${count(data.lists.length, 'lijst wordt', 'lijsten worden')} vervangen door ${count(pending.lists.length, 'lijst', 'lijsten')} uit de back-up. Je notities blijven staan. Dit kan niet ongedaan worden gemaakt.`
+              : `Je huidige ${count(data.lists.length, 'lijst', 'lijsten')} en ${count(data.notes.length, 'notitie', 'notities')} worden vervangen door ${count(pending.lists.length, 'lijst', 'lijsten')} en ${count(pending.notes.length, 'notitie', 'notities')} uit de back-up. Dit kan niet ongedaan worden gemaakt.`
           }
           confirmLabel="Overschrijven"
           danger

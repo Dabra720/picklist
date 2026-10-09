@@ -1,16 +1,19 @@
-import { cleanName, cleanQuantity } from '../lib/util';
+import { cleanName, cleanNoteBody, cleanQuantity } from '../lib/util';
 import {
   LABEL_COLORS,
   SORT_MODES,
   type AppData,
   type Item,
   type Label,
+  MAX_NAME_LENGTH,
+  type Note,
   type PackList,
   type SortMode,
 } from '../types';
 
 const APP_ID = 'paklijsten';
-const BACKUP_VERSION = 1;
+// 1: lists, labels, items. 2: adds notes.
+const BACKUP_VERSION = 2;
 
 interface BackupFile extends AppData {
   app: typeof APP_ID;
@@ -18,7 +21,13 @@ interface BackupFile extends AppData {
   exportedAt: string;
 }
 
-export type ParseResult = { ok: true; data: AppData } | { ok: false; error: string };
+/**
+ * `notesIncluded` is false for backups made before notes existed; importing one of those
+ * should leave the notes on this device alone.
+ */
+export type ParseResult =
+  | { ok: true; data: AppData; notesIncluded: boolean }
+  | { ok: false; error: string };
 
 export function buildBackup(data: AppData): BackupFile {
   return { app: APP_ID, version: BACKUP_VERSION, exportedAt: new Date().toISOString(), ...data };
@@ -90,6 +99,10 @@ function readOrder(record: Record<string, unknown>, fallback: number): number {
   return typeof record.order === 'number' && Number.isFinite(record.order) ? record.order : fallback;
 }
 
+function readTime(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : Date.now();
+}
+
 /** Validates the contents of a backup file and returns clean, consistent data. */
 export function parseBackup(text: string): ParseResult {
   try {
@@ -151,7 +164,22 @@ export function parseBackup(text: string): ParseResult {
       };
     });
 
-    return { ok: true, data: { lists, labels, items } };
+    const notesIncluded = raw.notes !== undefined;
+    const noteIds = new Set<string>();
+    const notes = notesIncluded
+      ? readArray(raw, 'notes').map<Note>((record) => {
+          const createdAt = readTime(record.createdAt);
+          return {
+            id: readId(record, 'id', noteIds),
+            title: typeof record.title === 'string' ? record.title.slice(0, MAX_NAME_LENGTH) : '',
+            body: typeof record.body === 'string' ? cleanNoteBody(record.body) : '',
+            createdAt,
+            updatedAt: typeof record.updatedAt === 'number' ? readTime(record.updatedAt) : createdAt,
+          };
+        })
+      : [];
+
+    return { ok: true, data: { lists, labels, items, notes }, notesIncluded };
   } catch (error) {
     if (error instanceof InvalidBackup) return { ok: false, error: error.message };
     throw error;

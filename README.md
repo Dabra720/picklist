@@ -16,7 +16,13 @@ account, geen server, en na de eerste keer laden volledig offline te gebruiken.
 - Alles in één keer afvinken of resetten. Een reset verandert alleen de vinkjes, zodat je een
   lijst steeds opnieuw kunt gebruiken. Per ongeluk gedaan? Kies **Ongedaan maken** in de melding.
 - Dashboard met voortgangsbalk per lijst en een duidelijke markering als een lijst compleet is.
-- Back-up exporteren en terugzetten als JSON (Instellingen, rechtsboven op het hoofdscherm).
+- Notities: vrije tekst met een titel, voor alles wat niet in een paklijst past. Wordt tijdens
+  het typen automatisch bewaard, is doorzoekbaar en een verwijderde notitie kun je terughalen
+  via **Ongedaan maken**. Een nieuwe notitie die je leeg laat, verdwijnt vanzelf.
+- Menu (☰ linksboven) om te wisselen tussen **Paklijsten** en **Notities**, en voor de
+  **Instellingen**.
+- Back-up exporteren en terugzetten als JSON (Menu → Instellingen). Een back-up bevat lijsten
+  én notities. Zet je een oudere back-up zonder notities terug, dan blijven je notities staan.
 - Lichte en donkere weergave (volgt het systeem, of kies zelf).
 
 ## Aan de slag
@@ -91,15 +97,18 @@ installatie-icoon in de adresbalk.
   over te zetten.
 - Verwijder je de app van het beginscherm of wis je de websitegegevens, dan zijn de lijsten weg.
   iOS kan gegevens van websites die lang niet zijn gebruikt ook zelf opruimen; voor apps op het
-  beginscherm geldt die limiet niet. Maak hoe dan ook af en toe een back-up via **Instellingen →
+  beginscherm geldt die limiet niet. Maak hoe dan ook af en toe een back-up via **Menu → Instellingen →
   Back-up exporteren** en bewaar het bestand in Bestanden of iCloud Drive.
 - Een nieuwe versie van de app wordt automatisch opgehaald en geladen zodra je de app opent
   terwijl je online bent.
 
 ## Gegevens en updates
 
-- Lijsten, labels, items, vinkjes en volgordes staan in IndexedDB (database `paklijsten`). Elke
-  wijziging wordt direct opgeslagen.
+- Lijsten, labels, items, vinkjes, volgordes en notities staan in IndexedDB (database
+  `paklijsten`). Elke wijziging wordt direct opgeslagen; notities kort na het typen en altijd
+  bij het verlaten van de notitie of de app.
+- Versie 2 van de database voegt de store `notes` toe. Bestaande stores en gegevens blijven bij
+  die upgrade onaangeroerd.
 - De service worker cachet alleen de bestanden van de app. Een update vervangt die bestanden en
   raakt de database niet aan.
 - Wijzigt het datamodel later, verhoog dan `DB_VERSION` in [src/db/idb.ts](src/db/idb.ts) en
@@ -113,14 +122,14 @@ installatie-icoon in de adresbalk.
 src/
   main.tsx            Startpunt: thema, database laden, service worker registreren
   App.tsx             Kiest het scherm op basis van de route
-  types.ts            Datamodellen (PackList, Label, Item)
+  types.ts            Datamodellen (PackList, Label, Item, Note)
   styles.css          Alle styling, met kleuren voor licht en donker
   db/idb.ts           Dunne laag rond IndexedDB
   store/store.ts      Gegevens in het geheugen plus alle bewerkingen
   store/backup.ts     Export, import en validatie van back-ups
   lib/                Route, thema, meldingen en hulpfuncties
-  components/         Herbruikbare bouwstenen (Sheet, dialogen, ProgressBar, Icon)
-  screens/            Hoofdscherm, lijstscherm en de bijbehorende sheets
+  components/         Herbruikbare bouwstenen (Sheet, dialogen, menu, ProgressBar, Icon)
+  screens/            Hoofdscherm, lijstscherm, notities en de bijbehorende sheets
 scripts/
   generate-icons.mjs  Maakt de PNG-iconen zonder externe pakketten
 public/               Iconen en favicon

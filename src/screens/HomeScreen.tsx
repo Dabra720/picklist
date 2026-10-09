@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { MenuButton } from '../components/AppMenu';
 import { ActionSheet, ConfirmDialog, NameSheet } from '../components/dialogs';
 import { Icon } from '../components/Icon';
 import { ProgressBar } from '../components/ProgressBar';
@@ -14,11 +15,9 @@ import {
   useAppState,
 } from '../store/store';
 import type { PackList } from '../types';
-import { SettingsSheet } from './SettingsSheet';
 
 type Dialog =
   | { kind: 'create' }
-  | { kind: 'settings' }
   | { kind: 'menu' | 'rename' | 'delete'; list: PackList };
 
 export function HomeScreen() {
@@ -42,15 +41,8 @@ export function HomeScreen() {
   return (
     <div className="screen">
       <header className="topbar">
+        <MenuButton current="lists" />
         <h1>Paklijsten</h1>
-        <button
-          type="button"
-          className="icon-btn"
-          aria-label="Instellingen"
-          onClick={() => setDialog({ kind: 'settings' })}
-        >
-          <Icon name="settings" />
-        </button>
       </header>
 
       <main className="content">
@@ -138,8 +130,6 @@ export function HomeScreen() {
           }}
         />
       )}
-
-      {dialog?.kind === 'settings' && <SettingsSheet onClose={close} />}
 
       {dialog?.kind === 'menu' && (
         <ActionSheet

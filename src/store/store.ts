@@ -1,13 +1,15 @@
 import { useSyncExternalStore } from 'react';
 import { applyWrites, loadAll, replaceAll, type Write } from '../db/idb';
 import { showToast } from '../lib/toast';
-import { byOrder, cleanName, cleanQuantity, nextOrder, uid } from '../lib/util';
+import { byOrder, cleanName, cleanNoteBody, cleanQuantity, isEmptyNote, nextOrder, uid } from '../lib/util';
 import {
   EMPTY_DATA,
   LABEL_COLORS,
+  MAX_NAME_LENGTH,
   type AppData,
   type Item,
   type Label,
+  type Note,
   type PackList,
   type SortMode,
 } from '../types';
@@ -61,7 +63,11 @@ export async function initStore() {
     const stored = await loadAll();
     // Items saved before quantities existed have none; they count as one.
     const items = stored.items.map((item) => ({ ...item, quantity: cleanQuantity(item.quantity) }));
-    setState({ status: 'ready', data: { ...stored, items } });
+    // A note that was opened but never written in is not worth keeping.
+    const emptyNotes = stored.notes.filter(isEmptyNote).map((note) => note.id);
+    const notes = stored.notes.filter((note) => !isEmptyNote(note));
+    setState({ status: 'ready', data: { ...stored, items, notes } });
+    if (emptyNotes.length > 0) enqueue(() => applyWrites([{ store: 'notes', remove: emptyNotes }]));
     // Ask the browser not to evict our data under storage pressure (best effort).
     void navigator.storage?.persist?.().catch(() => undefined);
   } catch (error) {
@@ -119,6 +125,7 @@ export function deleteList(id: string) {
       lists: data.lists.filter((l) => l.id !== id),
       labels: data.labels.filter((l) => l.listId !== id),
       items: data.items.filter((i) => i.listId !== id),
+      notes: data.notes,
     },
     [
       { store: 'lists', remove: [id] },
@@ -162,6 +169,7 @@ export function duplicateList(id: string): string | null {
       lists: [...data.lists, list],
       labels: [...data.labels, ...labels],
       items: [...data.items, ...items],
+      notes: data.notes,
     },
     [
       { store: 'lists', put: [list] },
@@ -344,6 +352,53 @@ export function reorderItems(orderedIds: string[]) {
   commit({ ...data, items: data.items.map((i) => changed.get(i.id) ?? i) }, [
     { store: 'items', put: [...changed.values()] },
   ]);
+}
+
+// ---------- Notes ----------
+
+export function createNote(): string {
+  const { data } = state;
+  const now = Date.now();
+  const note: Note = { id: uid(), title: '', body: '', createdAt: now, updatedAt: now };
+  commit({ ...data, notes: [...data.notes, note] }, [{ store: 'notes', put: [note] }]);
+  return note.id;
+}
+
+export function updateNote(id: string, patch: Partial<Pick<Note, 'title' | 'body'>>) {
+  const { data } = state;
+  const current = data.notes.find((n) => n.id === id);
+  if (!current) return;
+  const updated: Note = {
+    ...current,
+    title: patch.title !== undefined ? patch.title.slice(0, MAX_NAME_LENGTH) : current.title,
+    body: patch.body !== undefined ? cleanNoteBody(patch.body) : current.body,
+  };
+  if (updated.title === current.title && updated.body === current.body) return;
+  updated.updatedAt = Date.now();
+  commit({ ...data, notes: data.notes.map((n) => (n.id === id ? updated : n)) }, [
+    { store: 'notes', put: [updated] },
+  ]);
+}
+
+export function deleteNote(id: string) {
+  const { data } = state;
+  if (!data.notes.some((n) => n.id === id)) return;
+  commit({ ...data, notes: data.notes.filter((n) => n.id !== id) }, [
+    { store: 'notes', remove: [id] },
+  ]);
+}
+
+/** Removes a note silently if nothing was written in it (used when leaving a new note). */
+export function discardIfEmpty(id: string) {
+  const note = state.data.notes.find((n) => n.id === id);
+  if (note && isEmptyNote(note)) deleteNote(id);
+}
+
+/** Puts back a note exactly as it was (used to undo a delete). */
+export function restoreNote(note: Note) {
+  const { data } = state;
+  if (data.notes.some((n) => n.id === note.id)) return;
+  commit({ ...data, notes: [...data.notes, note] }, [{ store: 'notes', put: [note] }]);
 }
 
 // ---------- Backup ----------
