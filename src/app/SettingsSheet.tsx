@@ -3,6 +3,8 @@ import { Icon } from '../core/components/Icon';
 import { Sheet } from '../core/components/Sheet';
 import { useTheme, type Theme } from '../core/lib/theme';
 import { getSetting, useAppState } from '../core/store';
+import { MODULES } from '../modules';
+import { setTab, useTabs } from './navigation';
 import {
   backupParts,
   hasContent,
@@ -27,6 +29,7 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
   // Re-render when data changes, so the backup options stay up to date.
   useAppState();
   const [theme, setTheme] = useTheme();
+  const tabs = useTabs();
   const [exporting, setExporting] = useState(false);
   const [parsed, setParsed] = useState<ParsedBackup | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +72,28 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
           >
             {option.label}
           </button>
+        ))}
+      </div>
+
+      <h3 className="section-title">Tabbalk</h3>
+      <p className="sheet-text">
+        Kies de vier onderdelen onderaan het scherm. De rest staat onder Meer.
+      </p>
+      <div className="tab-slots">
+        {tabs.map((id, slot) => (
+          <select
+            key={slot}
+            className="select"
+            aria-label={`Tab ${slot + 1}`}
+            value={id}
+            onChange={(event) => setTab(tabs, slot, event.target.value)}
+          >
+            {MODULES.map((module) => (
+              <option key={module.id} value={module.id}>
+                {module.label}
+              </option>
+            ))}
+          </select>
         ))}
       </div>
 

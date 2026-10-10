@@ -995,6 +995,95 @@ input[type='search'] {
   gap: 8px;
 }
 
+/* ---------- Tab bar ---------- */
+
+:root {
+  --tabbar-h: 58px;
+}
+
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--safe-right) var(--safe-bottom) var(--safe-left);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.tab {
+  flex: 1;
+  max-width: 120px;
+  min-height: var(--tabbar-h);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.tab span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-active {
+  color: var(--accent);
+}
+
+/* Room for the tab bar: the screen's own bottom bar sits on top of it. */
+body.has-tabbar .screen {
+  padding-bottom: calc(var(--tabbar-h) + var(--safe-bottom));
+}
+
+body.has-tabbar .bottom-bar {
+  bottom: calc(var(--tabbar-h) + var(--safe-bottom));
+  padding-bottom: 12px;
+}
+
+body.has-tabbar .toast-host {
+  bottom: calc(88px + var(--tabbar-h) + var(--safe-bottom));
+}
+
+/* "Meer" in the tab bar opens the menu, so the ☰ button is not needed. */
+body.has-tabbar .menu-button {
+  display: none;
+}
+
+body.has-tabbar .topbar h1:first-child {
+  padding-left: 8px;
+}
+
+/* While typing in the bottom bar the keyboard needs the room; hide the tab bar. */
+body.has-tabbar:has(.bottom-bar :focus) .tabbar {
+  display: none;
+}
+
+body.has-tabbar:has(.bottom-bar :focus) .bottom-bar {
+  bottom: 0;
+}
+
+.tab-slots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.tab-slots .select {
+  width: 100%;
+}
+
 /* ---------- Tasks ---------- */
 
 /* The task board uses the full width on desktop. */

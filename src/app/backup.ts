@@ -69,9 +69,14 @@ export function describeCurrent(key: string): string {
 }
 
 function describeSettings(records: SettingRecord[]): string {
-  const names: Record<string, string> = { theme: 'thema' };
+  const names: Record<string, string> = {
+    theme: 'thema',
+    'nav.tabs': 'tabbalk',
+    'tasks.view': 'takenweergave',
+    'tasks.sort': 'takenweergave',
+  };
   if (records.length === 0) return 'Geen';
-  return records.map((record) => names[record.id] ?? record.id).join(', ');
+  return [...new Set(records.map((record) => names[record.id] ?? 'overige'))].join(', ');
 }
 
 /** True when the part has anything to export. */
