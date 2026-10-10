@@ -110,6 +110,26 @@ export async function importData(data: AppData, stores: DataStore[]): Promise<vo
 
 const settings = new Map<string, unknown>();
 const settingTimes = new Map<string, number>();
+const settingListeners = new Set<() => void>();
+// Changes on every settings change, so useSetting can tell React something changed.
+let settingsVersion = 0;
+
+function settingsChanged() {
+  settingsVersion += 1;
+  settingListeners.forEach((listener) => listener());
+}
+
+/** A setting that re-renders the component when it changes. */
+export function useSetting<T>(key: string): T | undefined {
+  useSyncExternalStore(
+    (listener) => {
+      settingListeners.add(listener);
+      return () => settingListeners.delete(listener);
+    },
+    () => settingsVersion,
+  );
+  return settings.get(key) as T | undefined;
+}
 
 function loadSettings(records: SettingRecord[]) {
   settings.clear();
@@ -118,6 +138,7 @@ function loadSettings(records: SettingRecord[]) {
     settings.set(record.id, record.value);
     settingTimes.set(record.id, record.updatedAt ?? 0);
   }
+  settingsChanged();
 }
 
 export function getSetting<T>(key: string): T | undefined {
@@ -137,12 +158,14 @@ export function setSetting(key: string, value: unknown) {
   if (value === undefined) {
     settings.delete(key);
     settingTimes.delete(key);
+    settingsChanged();
     enqueue(() => applyWrites([{ store: 'settings', remove: [key] }]));
     return;
   }
   const record: SettingRecord = { id: key, value, updatedAt: Date.now() };
   settings.set(key, value);
   settingTimes.set(key, record.updatedAt);
+  settingsChanged();
   enqueue(() => applyWrites([{ store: 'settings', put: [record] }]));
 }
 
@@ -153,5 +176,6 @@ export function putSettingRecords(records: SettingRecord[]) {
     settings.set(record.id, record.value);
     settingTimes.set(record.id, record.updatedAt);
   }
+  settingsChanged();
   enqueue(() => applyWrites([{ store: 'settings', put: records }]));
 }

@@ -995,6 +995,376 @@ input[type='search'] {
   gap: 8px;
 }
 
+/* ---------- Tab bar ---------- */
+
+:root {
+  --tabbar-h: 58px;
+}
+
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--safe-right) var(--safe-bottom) var(--safe-left);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.tab {
+  flex: 1;
+  max-width: 120px;
+  min-height: var(--tabbar-h);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.tab span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-active {
+  color: var(--accent);
+}
+
+/* Room for the tab bar: the screen's own bottom bar sits on top of it. */
+body.has-tabbar .screen {
+  padding-bottom: calc(var(--tabbar-h) + var(--safe-bottom));
+}
+
+body.has-tabbar .bottom-bar {
+  bottom: calc(var(--tabbar-h) + var(--safe-bottom));
+  padding-bottom: 12px;
+}
+
+body.has-tabbar .toast-host {
+  bottom: calc(88px + var(--tabbar-h) + var(--safe-bottom));
+}
+
+/* "Meer" in the tab bar opens the menu, so the ☰ button is not needed. */
+body.has-tabbar .menu-button {
+  display: none;
+}
+
+body.has-tabbar .topbar h1:first-child {
+  padding-left: 8px;
+}
+
+/* While typing in the bottom bar the keyboard needs the room; hide the tab bar. */
+body.has-tabbar:has(.bottom-bar :focus) .tabbar {
+  display: none;
+}
+
+body.has-tabbar:has(.bottom-bar :focus) .bottom-bar {
+  bottom: 0;
+}
+
+.tab-slots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.tab-slots .select {
+  width: 100%;
+}
+
+/* ---------- Tasks ---------- */
+
+/* The task board uses the full width on desktop. */
+@media (min-width: 900px) {
+  .screen-wide {
+    max-width: 1100px;
+  }
+}
+
+.segmented-icons {
+  margin: 0;
+  flex: none;
+}
+
+.segmented-icons button {
+  min-width: 44px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.topbar .segmented-icons {
+  margin-left: auto;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.task-list > li + li {
+  border-top: 1px solid var(--border);
+}
+
+.task-row {
+  display: flex;
+  align-items: center;
+  min-height: 60px;
+  padding-right: 4px;
+}
+
+.task-check {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 52px;
+  align-self: stretch;
+  cursor: pointer;
+}
+
+.task-check input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.checkbox-round {
+  border-radius: 50%;
+}
+
+.task-check input:checked + .checkbox {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+  animation: pop 0.22s ease;
+}
+
+.task-check input:focus-visible + .checkbox {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.task-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 8px 10px 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.task-title {
+  overflow-wrap: anywhere;
+  font-weight: 550;
+}
+
+.task-done .task-title,
+.subtask.task-done input {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.task-meta:empty {
+  display: none;
+}
+
+.task-badge,
+.task-priority {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-weight: 650;
+}
+
+.task-badge {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.task-priority {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.task-overdue {
+  color: var(--danger);
+  font-weight: 650;
+}
+
+.task-project {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.group-toggle {
+  border: 0;
+  background: transparent;
+  padding: 6px 4px;
+  font-weight: 650;
+  color: var(--text-muted);
+}
+
+.board-tabs {
+  margin: 0;
+}
+
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.board-column {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.board-column.active {
+  display: flex;
+}
+
+.board-title {
+  display: none;
+  font-size: 1rem;
+}
+
+.board-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Desktop: all three columns side by side; drag cards between them. */
+@media (min-width: 900px) {
+  .board-tabs {
+    display: none;
+  }
+
+  .board {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .board-column {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    min-height: 200px;
+    padding: 12px;
+    border-radius: var(--radius);
+    background: var(--surface-2);
+  }
+
+  .board-title {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .board-cards li {
+    cursor: grab;
+  }
+}
+
+.task-editor {
+  gap: 16px;
+}
+
+.task-editor .segmented {
+  margin-bottom: 0;
+}
+
+.date-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-input {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tap);
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+}
+
+.date-input:disabled {
+  opacity: 0.5;
+}
+
+.subtasks {
+  display: flex;
+  flex-direction: column;
+}
+
+.subtask {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  padding-right: 4px;
+}
+
+.subtask + .subtask {
+  border-top: 1px solid var(--border);
+}
+
+.subtask input[type='text'] {
+  flex: 1;
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  padding: 0 4px;
+}
+
+.task-notes {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.5;
+  resize: none;
+  overflow-y: auto;
+}
+
 /* ---------- Templates ---------- */
 
 /* An item row without a checkbox (template items): tapping it opens the edit sheet. */

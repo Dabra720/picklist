@@ -21,14 +21,21 @@ account, geen server, en na de eerste keer laden volledig offline te gebruiken.
   paklijst** kies je een lege lijst of een template; labels, kleuren, items, aantallen en
   volgorde worden overgenomen, zonder vinkjes. Een template is een kopie: wijzigingen in de
   template en in lijsten raken elkaar niet. Templates kun je in categorieën groeperen.
+- Taken: eenmalig werk met een status (Te doen, Bezig, Afgerond), prioriteit, deadline (datum en
+  eventueel tijd), subtaken, notities en een project. Lijstweergave gegroepeerd op deadline of
+  prioriteit, of een bord met drie kolommen (op de telefoon één kolom tegelijk met tabbladen en
+  **Verplaats naar**; op een groot scherm naast elkaar, met slepen). Anders dan een paklijst
+  vink je een taak één keer af.
 - Notities: vrije tekst met een titel, voor alles wat niet in een paklijst past. Wordt tijdens
   het typen automatisch bewaard, is doorzoekbaar en een verwijderde notitie kun je terughalen
   via **Ongedaan maken**. Een nieuwe notitie die je leeg laat, verdwijnt vanzelf.
-- Menu (☰ linksboven) om te wisselen tussen **Paklijsten**, **Templates** en **Notities**, en
-  voor de **Instellingen**.
-- Back-ups als JSON (Menu → Instellingen):
+- Tabbalk onderaan de hoofdschermen met vier onderdelen naar keuze (Meer → Instellingen →
+  Tabbalk) en **Meer** voor de rest en de **Instellingen**. Op een scherm zonder tabbalk (een
+  lijst, notitie, template of taak) ga je terug met de pijl linksboven. Tijdens het typen
+  onderaan verdwijnt de tabbalk, zodat het toetsenbord ruimte heeft.
+- Back-ups als JSON (Meer → Instellingen):
   - **Exporteren**: alles, of alleen de onderdelen die je kiest (Paklijsten, Templates,
-    Notities, Instellingen).
+    Taken, Notities, Instellingen).
   - **Terugzetten**: kies per onderdeel en kies **Samenvoegen** (voegt toe wat nieuw is; bij
     iets wat al bestaat blijft de laatst gewijzigde versie staan; er wordt niets verwijderd) of
     **Vervangen** (de gekozen onderdelen worden gewist en vervangen).
@@ -110,7 +117,7 @@ installatie-icoon in de adresbalk.
   over te zetten.
 - Verwijder je de app van het beginscherm of wis je de websitegegevens, dan zijn de lijsten weg.
   iOS kan gegevens van websites die lang niet zijn gebruikt ook zelf opruimen; voor apps op het
-  beginscherm geldt die limiet niet. Maak hoe dan ook af en toe een back-up via **Menu → Instellingen →
+  beginscherm geldt die limiet niet. Maak hoe dan ook af en toe een back-up via **Meer → Instellingen →
   Back-up exporteren** en bewaar het bestand in Bestanden of iCloud Drive.
 - Een nieuwe versie van de app wordt automatisch opgehaald en geladen zodra je de app opent
   terwijl je online bent.
@@ -118,7 +125,7 @@ installatie-icoon in de adresbalk.
 ## Gegevens en updates
 
 - Alle gegevens staan in IndexedDB (database `paklijsten`): lijsten, labels, items, vinkjes,
-  volgordes, templates, notities en instellingen zoals het thema. Elke wijziging wordt direct opgeslagen;
+  volgordes, templates, taken, notities en instellingen zoals het thema. Elke wijziging wordt direct opgeslagen;
   notities kort na het typen en altijd bij het verlaten van de notitie of de app.
 - Elk record heeft een `id` (UUID), `createdAt` en `updatedAt`. Daarmee kunnen back-ups later
   worden samengevoegd en kan de app later tussen apparaten synchroniseren.
@@ -134,6 +141,7 @@ installatie-icoon in de adresbalk.
   | 2 | Notities: `notes` |
   | 3 | Store `settings`; `createdAt`/`updatedAt` op elk record (labels en items krijgen de datum van hun lijst) |
   | 4 | Templates: `templates` (met labels en items erin), `templateCategories` |
+  | 5 | Taken: `tasks` (met subtaken erin), `projects` |
 
 - Back-upformaat (versie 3): per module een eigen deel met een eigen versienummer, zodat een
   module zijn gegevens kan wijzigen zonder de andere te raken en een back-up ook maar een deel
@@ -162,11 +170,12 @@ src/
     types.ts            BaseRecord en AppData
     components/         Sheet, dialogen, ProgressBar, Icon, meldingen
     lib/                Thema, meldingen, viewport en hulpfuncties
-  app/                  De schil rond de modules: menu, instellingen, back-up
+  app/                  De schil rond de modules: menu, tabbalk, instellingen, back-up
   modules/
     index.ts            Alle modules, in menuvolgorde
     lists/              Paklijsten: types, store, schermen, sheets
     templates/          Templates en categorieën: types, store, schermen
+    tasks/              Taken en projecten: types, store, lijst, bord, detail
     notes/              Notities: types, store, schermen
 scripts/
   generate-icons.mjs    Maakt de PNG-iconen zonder externe pakketten
