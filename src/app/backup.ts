@@ -1,4 +1,5 @@
 import { DATA_STORES, type DataStore, type SettingRecord } from '../core/db';
+import { saveFile } from '../core/lib/files';
 import { showToast } from '../core/lib/toast';
 import { fail, InvalidBackup, isRecord, isValidId } from '../core/lib/validate';
 import type { ModuleBackup } from '../core/modules';
@@ -124,33 +125,9 @@ export async function exportBackup(keys: string[]): Promise<boolean> {
   const json = JSON.stringify(buildBackup(keys), null, 2);
   const file = new File([json], name, { type: 'application/json' });
 
-  const saved = await saveFile(file);
+  const saved = await saveFile(file, 'Paklijsten back-up');
   if (saved && complete) setSetting(LAST_BACKUP_SETTING, Date.now());
   return saved;
-}
-
-async function saveFile(file: File): Promise<boolean> {
-  // On phones the share sheet ("Bewaar in Bestanden") is more reliable than a download,
-  // especially in an installed iOS PWA.
-  const touch = window.matchMedia('(pointer: coarse)').matches;
-  if (touch && navigator.canShare?.({ files: [file] })) {
-    try {
-      await navigator.share({ files: [file], title: 'Paklijsten back-up' });
-      return true;
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') return false;
-    }
-  }
-
-  const url = URL.createObjectURL(file);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = file.name;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
-  return true;
 }
 
 // ---------- Reading a backup ----------

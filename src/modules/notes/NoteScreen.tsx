@@ -3,6 +3,7 @@ import { ActionSheet, ConfirmDialog } from '../../core/components/dialogs';
 import { Icon } from '../../core/components/Icon';
 import { goNotes } from './routes';
 import { TagField } from '../search/TagPicker';
+import { ReminderField } from '../reminders/ReminderField';
 import { showToast } from '../../core/lib/toast';
 import { plainInput } from '../../core/lib/util';
 import { formatNoteDate, isEmptyNote } from './util';
@@ -147,7 +148,10 @@ export function NoteScreen({ note }: { note: Note }) {
             schedule({ title: event.target.value, body });
           }}
         />
-        <TagField kind="note" id={note.id} tagIds={note.tagIds} />
+        <div className="detail-chips">
+          <TagField kind="note" id={note.id} tagIds={note.tagIds} />
+          <ReminderField target={{ kind: 'note', id: note.id }} title={title.trim()} />
+        </div>
         <textarea
           ref={textarea}
           className="note-body"

@@ -15,6 +15,7 @@ export const DATA_STORES: DataStore[] = [
   'tasks',
   'projects',
   'tags',
+  'reminders',
 ];
 
 export type StoreName = DataStore | 'settings';

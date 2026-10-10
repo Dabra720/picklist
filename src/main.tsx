@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 import { App } from './App';
 import { remindToBackUp } from './app/backup';
+import { announceDueReminders } from './modules/reminders/Watcher';
 import { applyTheme, syncThemeSetting } from './core/lib/theme';
 import { trackVisualViewport } from './core/lib/viewport';
 import { configureStore, initStore } from './core/store';
@@ -14,8 +15,11 @@ trackVisualViewport();
 configureStore(MODULES.flatMap((module) => module.loadHooks ?? []));
 void initStore().then(() => {
   syncThemeSetting();
-  // A moment after start, so the reminder does not compete with the first screen.
-  setTimeout(remindToBackUp, 1500);
+  // A moment after start, so notices do not compete with the first screen. Due reminders come
+  // first; the backup reminder waits for another time.
+  setTimeout(() => {
+    if (!announceDueReminders()) remindToBackUp();
+  }, 1500);
 });
 
 // Caches the app shell for offline use and picks up new versions automatically.

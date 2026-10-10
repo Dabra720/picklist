@@ -31,6 +31,7 @@ import { ItemList } from './ItemList';
 import { LabelSheet, type LabelActions } from './LabelSheet';
 import { AddItemBar, NO_LABEL } from './AddItemBar';
 import { TagField } from '../search/TagPicker';
+import { ReminderField } from '../reminders/ReminderField';
 import { openTemplate } from '../templates/routes';
 import { saveListAsTemplate } from '../templates/store';
 import { TemplateDetailsSheet } from '../templates/TemplateDetailsSheet';
@@ -187,7 +188,10 @@ export function ListScreen({ list }: { list: PackList }) {
           <ProgressBar checked={checked} total={total} label="Voortgang van deze lijst" />
         </section>
 
-        <TagField kind="list" id={list.id} tagIds={list.tagIds} />
+        <div className="detail-chips">
+          <TagField kind="list" id={list.id} tagIds={list.tagIds} />
+          <ReminderField target={{ kind: 'list', id: list.id }} title={`${list.name} inpakken`} />
+        </div>
 
         <div className="toolbar">
           <label className="search">

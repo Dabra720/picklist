@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 import type { IconName } from './components/Icon';
 import type { DataStore } from './db';
 import type { Route } from './router';
@@ -50,6 +50,11 @@ export interface AppModule {
   onLeave?: (route: Route) => void;
   /** Tidy-up steps for this module's data when the app starts. */
   loadHooks?: LoadHook[];
+  /**
+   * Rendered once while the app runs, whatever screen is shown: for work in the background such
+   * as checking for due reminders. Renders nothing visible.
+   */
+  Background?: ComponentType;
   /** How this module takes part in backups. Key in the backup file = the module id. */
   backup?: ModuleBackup;
 }
