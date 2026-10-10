@@ -1,4 +1,5 @@
 import type { AppModule } from '../../core/modules';
+import { NotesWidget } from './Widget';
 import { notesBackup } from './backup';
 import { NoteScreen } from './NoteScreen';
 import { NotesScreen } from './NotesScreen';
@@ -22,4 +23,5 @@ export const notesModule: AppModule = {
   },
   loadHooks: [removeEmptyNotes],
   backup: notesBackup,
+  widgets: [{ id: 'notes', title: 'Recente notities', more: 'notities', Component: NotesWidget }],
 };

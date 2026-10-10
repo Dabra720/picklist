@@ -77,6 +77,7 @@ function describeSettings(records: SettingRecord[]): string {
     'nav.tabs': 'tabbalk',
     'tasks.view': 'takenweergave',
     'tasks.sort': 'takenweergave',
+    'dashboard.widgets': 'dashboard',
   };
   if (records.length === 0) return 'Geen';
   return [...new Set(records.map((record) => names[record.id] ?? 'overige'))].join(', ');

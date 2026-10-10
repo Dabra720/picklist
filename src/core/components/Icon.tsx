@@ -27,6 +27,10 @@ const PATHS = {
   calendar: 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',
   flame: 'M12 21a6 6 0 006-6c0-4-3-6-4-10-2 2-3 4-3 6-1-1-2-2-2-4-2 2-3 5-3 8a6 6 0 006 6z',
   chevronRight: 'M9 5l7 7-7 7',
+  home: 'M4 11l8-7 8 7v9h-5v-6H9v6H4z',
+  sliders: 'M4 7h9M17 7h3M4 17h3M11 17h9M15 4.5v5M9 14.5v5',
+  up: 'M6 15l6-6 6 6',
+  down: 'M6 9l6 6 6-6',
   folder: 'M3 6h6l2 2h10v11H3z',
   checklist: 'M10 6h10M10 12h10M10 18h10M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5 2.5-2.5M3.5 18l1.5 1.5 2.5-2.5',
 } as const;

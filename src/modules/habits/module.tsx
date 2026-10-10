@@ -1,4 +1,5 @@
 import type { AppModule } from '../../core/modules';
+import { HabitsWidget } from './Widget';
 import { habitsBackup } from './backup';
 import { HabitScreen } from './HabitScreen';
 import { HabitsScreen } from './HabitsScreen';
@@ -16,4 +17,5 @@ export const habitsModule: AppModule = {
     },
   },
   backup: habitsBackup,
+  widgets: [{ id: 'habits', title: 'Gewoontes vandaag', more: 'gewoontes', Component: HabitsWidget }],
 };

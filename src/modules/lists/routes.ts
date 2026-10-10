@@ -1,4 +1,4 @@
 import { navigate } from '../../core/router';
 
-export const goLists = () => navigate('');
+export const goLists = () => navigate('lijsten');
 export const openList = (id: string) => navigate('lijst', id);

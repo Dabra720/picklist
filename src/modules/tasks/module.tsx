@@ -1,4 +1,5 @@
 import type { AppModule } from '../../core/modules';
+import { TasksWidget } from './Widget';
 import { tasksBackup } from './backup';
 import { TaskScreen } from './TaskScreen';
 import { TasksScreen } from './TasksScreen';
@@ -16,4 +17,5 @@ export const tasksModule: AppModule = {
     },
   },
   backup: tasksBackup,
+  widgets: [{ id: 'tasks', title: 'Open taken', more: 'taken', Component: TasksWidget }],
 };
