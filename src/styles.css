@@ -1116,7 +1116,9 @@ input[type='search'] {
 }
 
 .note-body {
-  flex: 1;
+  /* Grow, but never shrink below the height the editor sets to fit the text. With flex: 1 the
+     flex basis (0) overrides that height and long notes got cut off. */
+  flex: 1 0 auto;
   width: 100%;
   min-height: 50vh;
   padding: 4px 4px 32px;
@@ -1128,7 +1130,8 @@ input[type='search'] {
   font-size: 17px;
   line-height: 1.5;
   resize: none;
-  overflow: hidden;
+  /* Normally the box fits the text; should that ever fail the text still scrolls. */
+  overflow-y: auto;
   outline: none;
 }
 

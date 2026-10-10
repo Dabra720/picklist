@@ -50,12 +50,32 @@ export function NoteScreen({ note }: { note: Note }) {
   }, [flush]);
 
   // Grow the text area with its content so the page scrolls as a whole (smoother on iOS).
-  useLayoutEffect(() => {
+  const fitToText = useCallback(() => {
     const element = textarea.current;
     if (!element) return;
+    // Collapsing the box to measure it shortens the page for a moment, which would make the
+    // browser jump to the top; keep the scroll position where it was.
+    const scrollY = window.scrollY;
     element.style.height = 'auto';
     element.style.height = `${element.scrollHeight}px`;
-  }, [body]);
+    if (window.scrollY !== scrollY) window.scrollTo(0, scrollY);
+  }, []);
+
+  useLayoutEffect(fitToText, [body, fitToText]);
+
+  // Text wraps differently after rotating the phone or resizing the window.
+  useEffect(() => {
+    const element = textarea.current;
+    if (!element || typeof ResizeObserver === 'undefined') return;
+    let width = element.clientWidth;
+    const observer = new ResizeObserver(() => {
+      if (element.clientWidth === width) return;
+      width = element.clientWidth;
+      fitToText();
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [fitToText]);
 
   // A brand-new note starts with the cursor in the text.
   useEffect(() => {
