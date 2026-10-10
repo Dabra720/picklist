@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react';
-import { Icon } from '../components/Icon';
-import { moveInArray } from '../lib/util';
-import type { Item } from '../types';
+import { Icon } from '../../core/components/Icon';
+import { moveInArray } from '../../core/lib/util';
+import type { Item } from './types';
 
 interface Props {
   items: Item[];

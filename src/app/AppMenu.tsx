@@ -1,18 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { goHome, goNotes } from '../lib/route';
-import { SettingsSheet } from '../screens/SettingsSheet';
-import { Icon, type IconName } from './Icon';
+import { Icon } from '../core/components/Icon';
+import { navigate } from '../core/router';
+import { MODULES } from '../modules';
+import { SettingsSheet } from './SettingsSheet';
 
-export type Section = 'lists' | 'notes';
-
-const SECTIONS: { id: Section; label: string; icon: IconName; go: () => void }[] = [
-  { id: 'lists', label: 'Paklijsten', icon: 'checklist', go: goHome },
-  { id: 'notes', label: 'Notities', icon: 'note', go: goNotes },
-];
-
-/** The menu button for the top bar of a main screen, with its side menu and the settings. */
-export function MenuButton({ current }: { current: Section }) {
+/**
+ * The menu button for the top bar of a main screen, with its side menu and the settings.
+ * `current` is the id of the module the screen belongs to.
+ */
+export function MenuButton({ current }: { current: string }) {
   const [open, setOpen] = useState(false);
   const [settings, setSettings] = useState(false);
 
@@ -52,7 +49,7 @@ function Drawer({
   onClose,
   onSettings,
 }: {
-  current: Section;
+  current: string;
   onClose: () => void;
   onSettings: () => void;
 }) {
@@ -86,19 +83,19 @@ function Drawer({
           </button>
         </div>
         <div className="menu">
-          {SECTIONS.map((section) => (
+          {MODULES.map((module) => (
             <button
-              key={section.id}
+              key={module.id}
               type="button"
-              className={`menu-item${section.id === current ? ' menu-item-current' : ''}`}
-              aria-current={section.id === current ? 'page' : undefined}
+              className={`menu-item${module.id === current ? ' menu-item-current' : ''}`}
+              aria-current={module.id === current ? 'page' : undefined}
               onClick={() => {
                 onClose();
-                if (section.id !== current) section.go();
+                if (module.id !== current) navigate(module.home);
               }}
             >
-              <Icon name={section.icon} />
-              {section.label}
+              <Icon name={module.icon} />
+              {module.label}
             </button>
           ))}
         </div>

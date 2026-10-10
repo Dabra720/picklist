@@ -1,10 +1,11 @@
 import { useMemo, useRef, useState, type FormEvent } from 'react';
-import { ActionSheet, ConfirmDialog, NameSheet } from '../components/dialogs';
-import { Icon } from '../components/Icon';
-import { ProgressBar } from '../components/ProgressBar';
-import { goHome, openList } from '../lib/route';
-import { showToast } from '../lib/toast';
-import { byOrder, parseQuantity, percent, plainInput, sortItems } from '../lib/util';
+import { ActionSheet, ConfirmDialog, NameSheet } from '../../core/components/dialogs';
+import { Icon } from '../../core/components/Icon';
+import { ProgressBar } from '../../core/components/ProgressBar';
+import { goLists, openList } from './routes';
+import { showToast } from '../../core/lib/toast';
+import { byOrder, percent, plainInput } from '../../core/lib/util';
+import { parseQuantity, sortItems } from './util';
 import {
   addItem,
   checkedIds,
@@ -19,9 +20,10 @@ import {
   setSortMode,
   toggleItem,
   updateItem,
-  useAppState,
-} from '../store/store';
-import { MAX_NAME_LENGTH, type Item, type Label, type PackList, type SortMode } from '../types';
+} from './store';
+import { useAppState } from '../../core/store';
+import { MAX_NAME_LENGTH } from '../../core/types';
+import type { Item, Label, PackList, SortMode } from './types';
 import { ItemEditSheet } from './ItemEditSheet';
 import { ItemList } from './ItemList';
 import { LabelSheet } from './LabelSheet';
@@ -147,7 +149,7 @@ export function ListScreen({ list }: { list: PackList }) {
   return (
     <div className="screen">
       <header className="topbar">
-        <button type="button" className="icon-btn" aria-label="Terug naar overzicht" onClick={goHome}>
+        <button type="button" className="icon-btn" aria-label="Terug naar overzicht" onClick={goLists}>
           <Icon name="back" />
         </button>
         <h1 className="topbar-title">{list.name}</h1>
@@ -400,7 +402,7 @@ export function ListScreen({ list }: { list: PackList }) {
           onCancel={close}
           onConfirm={() => {
             deleteList(list.id);
-            goHome();
+            goLists();
           }}
         />
       )}

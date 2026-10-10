@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react';
-import { Icon } from '../components/Icon';
-import { Sheet } from '../components/Sheet';
-import { plainInput } from '../lib/util';
-import { MAX_NAME_LENGTH, MAX_QUANTITY, type Item, type Label } from '../types';
+import { Icon } from '../../core/components/Icon';
+import { Sheet } from '../../core/components/Sheet';
+import { plainInput } from '../../core/lib/util';
+import { MAX_NAME_LENGTH } from '../../core/types';
+import { MAX_QUANTITY, type Item, type Label } from './types';
 
 interface Props {
   item: Item;

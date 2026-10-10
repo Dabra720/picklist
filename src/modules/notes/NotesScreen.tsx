@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
-import { MenuButton } from '../components/AppMenu';
-import { Icon } from '../components/Icon';
-import { openNote } from '../lib/route';
-import { formatNoteDate, isEmptyNote, noteHeading, plainInput } from '../lib/util';
-import { createNote, useAppState } from '../store/store';
+import { MenuButton } from '../../app/AppMenu';
+import { Icon } from '../../core/components/Icon';
+import { openNote } from './routes';
+import { plainInput } from '../../core/lib/util';
+import { formatNoteDate, isEmptyNote, noteHeading } from './util';
+import { useAppState } from '../../core/store';
+import { createNote } from './store';
 
 /** Overview of all notes, most recently changed first. */
 export function NotesScreen() {

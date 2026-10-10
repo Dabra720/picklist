@@ -1,26 +1,26 @@
 import { useMemo, useState } from 'react';
-import { MenuButton } from '../components/AppMenu';
-import { ActionSheet, ConfirmDialog, NameSheet } from '../components/dialogs';
-import { Icon } from '../components/Icon';
-import { ProgressBar } from '../components/ProgressBar';
-import { openList } from '../lib/route';
-import { showToast } from '../lib/toast';
-import { byOrder, percent } from '../lib/util';
+import { MenuButton } from '../../app/AppMenu';
+import { ActionSheet, ConfirmDialog, NameSheet } from '../../core/components/dialogs';
+import { Icon } from '../../core/components/Icon';
+import { ProgressBar } from '../../core/components/ProgressBar';
+import { openList } from './routes';
+import { showToast } from '../../core/lib/toast';
+import { byOrder, percent } from '../../core/lib/util';
 import {
   createExampleList,
   createList,
   deleteList,
   duplicateList,
   renameList,
-  useAppState,
-} from '../store/store';
-import type { PackList } from '../types';
+} from './store';
+import { useAppState } from '../../core/store';
+import type { PackList } from './types';
 
 type Dialog =
   | { kind: 'create' }
   | { kind: 'menu' | 'rename' | 'delete'; list: PackList };
 
-export function HomeScreen() {
+export function ListsScreen() {
   const { data } = useAppState();
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const close = () => setDialog(null);

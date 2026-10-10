@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { ActionSheet, ConfirmDialog } from '../components/dialogs';
-import { Icon } from '../components/Icon';
-import { goNotes } from '../lib/route';
-import { showToast } from '../lib/toast';
-import { formatNoteDate, isEmptyNote, plainInput } from '../lib/util';
-import { deleteNote, restoreNote, updateNote } from '../store/store';
-import { MAX_NAME_LENGTH, MAX_NOTE_LENGTH, type Note } from '../types';
+import { ActionSheet, ConfirmDialog } from '../../core/components/dialogs';
+import { Icon } from '../../core/components/Icon';
+import { goNotes } from './routes';
+import { showToast } from '../../core/lib/toast';
+import { plainInput } from '../../core/lib/util';
+import { formatNoteDate, isEmptyNote } from './util';
+import { deleteNote, restoreNote, updateNote } from './store';
+import { MAX_NAME_LENGTH } from '../../core/types';
+import { MAX_NOTE_LENGTH, type Note } from './types';
 
 // Typing is saved after a short pause, and always when leaving the note or the app.
 const SAVE_DELAY = 400;

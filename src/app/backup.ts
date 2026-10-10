@@ -1,15 +1,16 @@
-import { cleanName, cleanNoteBody, cleanQuantity } from '../lib/util';
+import { cleanName } from '../core/lib/util';
+import { MAX_NAME_LENGTH, type AppData } from '../core/types';
 import {
   LABEL_COLORS,
   SORT_MODES,
-  type AppData,
   type Item,
   type Label,
-  MAX_NAME_LENGTH,
-  type Note,
   type PackList,
   type SortMode,
-} from '../types';
+} from '../modules/lists/types';
+import { cleanQuantity } from '../modules/lists/util';
+import type { Note } from '../modules/notes/types';
+import { cleanNoteBody } from '../modules/notes/util';
 
 const APP_ID = 'paklijsten';
 // 1: lists, labels, items. 2: adds notes.
@@ -103,6 +104,13 @@ function readTime(value: unknown): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : Date.now();
 }
 
+/** createdAt and updatedAt of a record, with `fallback` for what a backup does not have. */
+function readTimes(record: Record<string, unknown>, fallback: number) {
+  const createdAt = typeof record.createdAt === 'number' ? readTime(record.createdAt) : fallback;
+  const updatedAt = typeof record.updatedAt === 'number' ? readTime(record.updatedAt) : createdAt;
+  return { createdAt, updatedAt };
+}
+
 /** Validates the contents of a backup file and returns clean, consistent data. */
 export function parseBackup(text: string): ParseResult {
   try {
@@ -118,15 +126,23 @@ export function parseBackup(text: string): ParseResult {
     }
 
     const listIds = new Set<string>();
-    const lists = readArray(raw, 'lists').map<PackList>((record, index) => ({
-      id: readId(record, 'id', listIds),
-      name: readName(record),
-      order: readOrder(record, index),
-      sortMode: SORT_MODES.includes(record.sortMode as SortMode)
-        ? (record.sortMode as SortMode)
-        : 'manual',
-      createdAt: typeof record.createdAt === 'number' ? record.createdAt : Date.now(),
-    }));
+    const listCreated = new Map<string, number>();
+    const lists = readArray(raw, 'lists').map<PackList>((record, index) => {
+      const list: PackList = {
+        id: readId(record, 'id', listIds),
+        name: readName(record),
+        order: readOrder(record, index),
+        sortMode: SORT_MODES.includes(record.sortMode as SortMode)
+          ? (record.sortMode as SortMode)
+          : 'manual',
+        ...readTimes(record, Date.now()),
+      };
+      listCreated.set(list.id, list.createdAt);
+      return list;
+    });
+    // Labels and items in older backups have no dates; they take those of their list.
+    const timesFromList = (record: Record<string, unknown>) =>
+      readTimes(record, listCreated.get(record.listId as string) ?? Date.now());
 
     const labelIds = new Set<string>();
     const labelList = new Map<string, string>();
@@ -140,6 +156,7 @@ export function parseBackup(text: string): ParseResult {
             ? record.color
             : LABEL_COLORS[index % LABEL_COLORS.length],
         order: readOrder(record, index),
+        ...timesFromList(record),
       };
       if (!listIds.has(label.listId)) fail(`Label "${label.name}" hoort bij een onbekende lijst.`);
       labelList.set(label.id, label.listId);
@@ -161,6 +178,7 @@ export function parseBackup(text: string): ParseResult {
         quantity: cleanQuantity(record.quantity),
         checked: record.checked === true,
         order: readOrder(record, index),
+        ...timesFromList(record),
       };
     });
 

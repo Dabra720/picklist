@@ -1,12 +1,12 @@
 import { useRef, useState, type ChangeEvent } from 'react';
-import { ConfirmDialog } from '../components/dialogs';
-import { Icon } from '../components/Icon';
-import { Sheet } from '../components/Sheet';
-import { useTheme, type Theme } from '../lib/theme';
-import { showToast } from '../lib/toast';
-import { exportBackup, parseBackup } from '../store/backup';
-import { importData, useAppState } from '../store/store';
-import type { AppData } from '../types';
+import { ConfirmDialog } from '../core/components/dialogs';
+import { Icon } from '../core/components/Icon';
+import { Sheet } from '../core/components/Sheet';
+import { useTheme, type Theme } from '../core/lib/theme';
+import { showToast } from '../core/lib/toast';
+import { exportBackup, parseBackup } from './backup';
+import { importData, useAppState } from '../core/store';
+import type { AppData } from '../core/types';
 
 const THEMES: { value: Theme; label: string }[] = [
   { value: 'system', label: 'Systeem' },
