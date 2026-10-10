@@ -25,6 +25,19 @@ export interface Item extends BaseRecord {
   order: number;
 }
 
+/** The fields of a label that screens shared by lists and templates use. */
+export type LabelLike = Pick<Label, 'id' | 'name' | 'color'>;
+
+/** The fields of an item that screens shared by lists and templates use. */
+export interface ItemLike {
+  id: string;
+  name: string;
+  quantity: number;
+  labelId: string | null;
+  /** Absent for template items, which are never checked off. */
+  checked?: boolean;
+}
+
 export const SORT_MODES: SortMode[] = ['manual', 'alpha', 'unchecked'];
 
 export const LABEL_COLORS = [

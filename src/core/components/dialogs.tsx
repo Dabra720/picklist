@@ -79,6 +79,8 @@ export interface MenuAction {
   icon: IconName;
   danger?: boolean;
   disabled?: boolean;
+  /** The action shows its own next step, so the sheet's onClose is not called first. */
+  keepOpen?: boolean;
   run: () => void;
 }
 
@@ -93,7 +95,7 @@ export function ActionSheet({ title, actions, onClose }: { title: string; action
             className={`menu-item${action.danger ? ' menu-item-danger' : ''}`}
             disabled={action.disabled}
             onClick={() => {
-              onClose();
+              if (!action.keepOpen) onClose();
               action.run();
             }}
           >

@@ -105,7 +105,8 @@ export function buildBackup(keys: string[]) {
  */
 export async function exportBackup(keys: string[]): Promise<boolean> {
   const date = new Date().toISOString().slice(0, 10);
-  const complete = moduleParts().every((part) => keys.includes(part.key));
+  // Complete = every module that has data is included (empty modules are not offered).
+  const complete = moduleParts().every((part) => keys.includes(part.key) || !hasContent(part.key));
   const which = complete
     ? ''
     : `-${backupParts()

@@ -8,13 +8,13 @@ import { showToast } from '../../core/lib/toast';
 import { byOrder, percent } from '../../core/lib/util';
 import {
   createExampleList,
-  createList,
   deleteList,
   duplicateList,
   renameList,
 } from './store';
 import { useAppState } from '../../core/store';
 import type { PackList } from './types';
+import { NewListSheet } from '../templates/NewListSheet';
 
 type Dialog =
   | { kind: 'create' }
@@ -116,20 +116,7 @@ export function ListsScreen() {
         </button>
       </div>
 
-      {dialog?.kind === 'create' && (
-        <NameSheet
-          title="Nieuwe paklijst"
-          label="Titel"
-          placeholder="Bijv. Weekendje weg"
-          submitLabel="Lijst maken"
-          onClose={close}
-          onSubmit={(name) => {
-            close();
-            const id = createList(name);
-            if (id) openList(id);
-          }}
-        />
-      )}
+      {dialog?.kind === 'create' && <NewListSheet onClose={close} />}
 
       {dialog?.kind === 'menu' && (
         <ActionSheet

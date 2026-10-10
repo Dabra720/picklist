@@ -3,11 +3,11 @@ import { Icon } from '../../core/components/Icon';
 import { Sheet } from '../../core/components/Sheet';
 import { plainInput } from '../../core/lib/util';
 import { MAX_NAME_LENGTH } from '../../core/types';
-import { MAX_QUANTITY, type Item, type Label } from './types';
+import { MAX_QUANTITY, type ItemLike, type LabelLike } from './types';
 
 interface Props {
-  item: Item;
-  labels: Label[];
+  item: ItemLike;
+  labels: LabelLike[];
   onSave: (patch: { name: string; labelId: string | null; quantity: number }) => void;
   onDelete: () => void;
   onClose: () => void;

@@ -995,6 +995,48 @@ input[type='search'] {
   gap: 8px;
 }
 
+/* ---------- Templates ---------- */
+
+/* An item row without a checkbox (template items): tapping it opens the edit sheet. */
+.item-main-plain {
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.template-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.template-group-title,
+.menu-group-title {
+  padding: 0 4px;
+  font-size: 0.875rem;
+  font-weight: 650;
+  color: var(--text-muted);
+}
+
+.menu-group-title {
+  margin: 8px 0 2px;
+  padding: 0 8px;
+}
+
+.menu-item-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.menu-item-detail {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
 /* ---------- Check list (choices in sheets) ---------- */
 
 .check-list {
