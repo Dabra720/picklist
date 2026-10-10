@@ -38,6 +38,11 @@ account, geen server, en na de eerste keer laden volledig offline te gebruiken.
   op het app-icoon (waar het systeem dat ondersteunt). Voor een melding terwijl de app dicht is:
   **Zet in agenda** maakt een agendabestand (.ics) met alarm voor de agenda van je telefoon.
   Echte pushmeldingen vragen een externe dienst en komen later.
+- Gewoontes: doel elke dag, op vaste weekdagen of X keer per week, eventueel met een hoeveelheid
+  per dag (8 glazen, 30 minuten). Vink af in de weekstrook (of +1 bij een hoeveelheid), en in de
+  maandkalender ook eerdere dagen. Reeks (huidige en langste; bij een weekdoel in weken) en het
+  percentage voor deze week en maand. Pauzeren (die dagen breken de reeks niet), archiveren,
+  verwijderen met ongedaan maken.
 - Tags en zoeken: geef lijsten, notities en taken één of meer tags (met een kleur). **Zoeken**
   (vergrootglas rechtsboven, of in het menu) doorzoekt alles: lijsten en hun items, taken en
   subtaken, notities en templates, ook zonder accenten ("cafe" vindt "café"). Filter op soort,
@@ -49,7 +54,7 @@ account, geen server, en na de eerste keer laden volledig offline te gebruiken.
   onderaan verdwijnt de tabbalk, zodat het toetsenbord ruimte heeft.
 - Back-ups als JSON (Meer → Instellingen):
   - **Exporteren**: alles, of alleen de onderdelen die je kiest (Paklijsten, Templates,
-    Taken, Notities, Herinneringen, Tags, Instellingen).
+    Taken, Notities, Herinneringen, Gewoontes, Tags, Instellingen).
   - **Terugzetten**: kies per onderdeel en kies **Samenvoegen** (voegt toe wat nieuw is; bij
     iets wat al bestaat blijft de laatst gewijzigde versie staan; er wordt niets verwijderd) of
     **Vervangen** (de gekozen onderdelen worden gewist en vervangen).
@@ -159,6 +164,7 @@ installatie-icoon in de adresbalk.
   | 5 | Taken: `tasks` (met subtaken erin), `projects` |
   | 6 | Tags: `tags`; `tagIds` (leeg) op lijsten, notities en taken |
   | 7 | Herinneringen: `reminders` |
+  | 8 | Gewoontes: `habits`, `habitChecks` (één record per gewoonte per dag) |
 
 - Back-upformaat (versie 3): per module een eigen deel met een eigen versienummer, zodat een
   module zijn gegevens kan wijzigen zonder de andere te raken en een back-up ook maar een deel
@@ -194,6 +200,7 @@ src/
     templates/          Templates en categorieën: types, store, schermen
     tasks/              Taken en projecten: types, store, lijst, bord, detail
     reminders/          Herinneringen: overzicht, bewerken, agenda-export, meldingen
+    habits/             Gewoontes: weekstrook, kalender, reeksen en statistieken
     search/             Zoeken over alle modules, en de tags
     notes/              Notities: types, store, schermen
 scripts/

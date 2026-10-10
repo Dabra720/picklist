@@ -164,6 +164,14 @@ export const MIGRATIONS: Migration[] = [
       done();
     },
   },
+  {
+    version: 8,
+    description: 'Gewoontes: habits, habitChecks',
+    run: (db, _tx, done) => {
+      ['habits', 'habitChecks'].forEach((name) => createStore(db, name));
+      done();
+    },
+  },
 ];
 
 export const DB_VERSION = MIGRATIONS[MIGRATIONS.length - 1].version;

@@ -1,5 +1,6 @@
 import type { Item, Label, PackList } from '../modules/lists/types';
 import type { Note } from '../modules/notes/types';
+import type { Habit, HabitCheck } from '../modules/habits/types';
 import type { Reminder } from '../modules/reminders/types';
 import type { Tag } from '../modules/search/types';
 import type { Project, Task } from '../modules/tasks/types';
@@ -27,6 +28,8 @@ export interface AppData {
   projects: Project[];
   tags: Tag[];
   reminders: Reminder[];
+  habits: Habit[];
+  habitChecks: HabitCheck[];
 }
 
 export const EMPTY_DATA: AppData = {
@@ -40,6 +43,8 @@ export const EMPTY_DATA: AppData = {
   projects: [],
   tags: [],
   reminders: [],
+  habits: [],
+  habitChecks: [],
 };
 
 export const MAX_NAME_LENGTH = 100;

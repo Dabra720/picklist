@@ -1,5 +1,6 @@
 import type { AppModule } from '../core/modules';
 import { listsModule } from './lists/module';
+import { habitsModule } from './habits/module';
 import { notesModule } from './notes/module';
 import { remindersModule } from './reminders/module';
 import { searchModule } from './search/module';
@@ -13,6 +14,7 @@ export const MODULES: AppModule[] = [
   tasksModule,
   notesModule,
   remindersModule,
+  habitsModule,
   searchModule,
 ];
 
