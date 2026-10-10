@@ -16,14 +16,19 @@ account, geen server, en na de eerste keer laden volledig offline te gebruiken.
 - Alles in één keer afvinken of resetten. Een reset verandert alleen de vinkjes, zodat je een
   lijst steeds opnieuw kunt gebruiken. Per ongeluk gedaan? Kies **Ongedaan maken** in de melding.
 - Dashboard met voortgangsbalk per lijst en een duidelijke markering als een lijst compleet is.
+- Templates: herbruikbare lijsten. Sla een paklijst op als template (⋯ in de lijst), of maak
+  er zelf een. Een template bewerk je zoals een lijst, maar zonder vinkjes. Bij **Nieuwe
+  paklijst** kies je een lege lijst of een template; labels, kleuren, items, aantallen en
+  volgorde worden overgenomen, zonder vinkjes. Een template is een kopie: wijzigingen in de
+  template en in lijsten raken elkaar niet. Templates kun je in categorieën groeperen.
 - Notities: vrije tekst met een titel, voor alles wat niet in een paklijst past. Wordt tijdens
   het typen automatisch bewaard, is doorzoekbaar en een verwijderde notitie kun je terughalen
   via **Ongedaan maken**. Een nieuwe notitie die je leeg laat, verdwijnt vanzelf.
-- Menu (☰ linksboven) om te wisselen tussen **Paklijsten** en **Notities**, en voor de
-  **Instellingen**.
+- Menu (☰ linksboven) om te wisselen tussen **Paklijsten**, **Templates** en **Notities**, en
+  voor de **Instellingen**.
 - Back-ups als JSON (Menu → Instellingen):
-  - **Exporteren**: alles, of alleen de onderdelen die je kiest (Paklijsten, Notities,
-    Instellingen).
+  - **Exporteren**: alles, of alleen de onderdelen die je kiest (Paklijsten, Templates,
+    Notities, Instellingen).
   - **Terugzetten**: kies per onderdeel en kies **Samenvoegen** (voegt toe wat nieuw is; bij
     iets wat al bestaat blijft de laatst gewijzigde versie staan; er wordt niets verwijderd) of
     **Vervangen** (de gekozen onderdelen worden gewist en vervangen).
@@ -113,7 +118,7 @@ installatie-icoon in de adresbalk.
 ## Gegevens en updates
 
 - Alle gegevens staan in IndexedDB (database `paklijsten`): lijsten, labels, items, vinkjes,
-  volgordes, notities en instellingen zoals het thema. Elke wijziging wordt direct opgeslagen;
+  volgordes, templates, notities en instellingen zoals het thema. Elke wijziging wordt direct opgeslagen;
   notities kort na het typen en altijd bij het verlaten van de notitie of de app.
 - Elk record heeft een `id` (UUID), `createdAt` en `updatedAt`. Daarmee kunnen back-ups later
   worden samengevoegd en kan de app later tussen apparaten synchroniseren.
@@ -128,6 +133,7 @@ installatie-icoon in de adresbalk.
   | 1 | Paklijsten: `lists`, `labels`, `items` |
   | 2 | Notities: `notes` |
   | 3 | Store `settings`; `createdAt`/`updatedAt` op elk record (labels en items krijgen de datum van hun lijst) |
+  | 4 | Templates: `templates` (met labels en items erin), `templateCategories` |
 
 - Back-upformaat (versie 3): per module een eigen deel met een eigen versienummer, zodat een
   module zijn gegevens kan wijzigen zonder de andere te raken en een back-up ook maar een deel
@@ -160,6 +166,7 @@ src/
   modules/
     index.ts            Alle modules, in menuvolgorde
     lists/              Paklijsten: types, store, schermen, sheets
+    templates/          Templates en categorieën: types, store, schermen
     notes/              Notities: types, store, schermen
 scripts/
   generate-icons.mjs    Maakt de PNG-iconen zonder externe pakketten

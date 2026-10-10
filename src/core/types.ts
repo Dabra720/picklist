@@ -1,5 +1,6 @@
 import type { Item, Label, PackList } from '../modules/lists/types';
 import type { Note } from '../modules/notes/types';
+import type { Template, TemplateCategory } from '../modules/templates/types';
 
 /**
  * Fields every stored record has. `updatedAt` changes on every edit; it is what merging a backup
@@ -17,8 +18,17 @@ export interface AppData {
   labels: Label[];
   items: Item[];
   notes: Note[];
+  templates: Template[];
+  templateCategories: TemplateCategory[];
 }
 
-export const EMPTY_DATA: AppData = { lists: [], labels: [], items: [], notes: [] };
+export const EMPTY_DATA: AppData = {
+  lists: [],
+  labels: [],
+  items: [],
+  notes: [],
+  templates: [],
+  templateCategories: [],
+};
 
 export const MAX_NAME_LENGTH = 100;

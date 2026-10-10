@@ -1,14 +1,22 @@
-import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+  type PointerEvent,
+} from 'react';
 import { Icon } from '../../core/components/Icon';
 import { moveInArray } from '../../core/lib/util';
-import type { Item } from './types';
+import type { ItemLike } from './types';
 
-interface Props {
-  items: Item[];
+interface Props<T extends ItemLike> {
+  items: T[];
   /** Manual reordering is only offered when the list is shown in its stored order. */
   sortable: boolean;
-  onToggle: (id: string) => void;
-  onEdit: (item: Item) => void;
+  /** Without it the items have no checkbox (template items). */
+  onToggle?: (id: string) => void;
+  onEdit: (item: T) => void;
   onReorder: (orderedIds: string[]) => void;
 }
 
@@ -35,7 +43,13 @@ interface DragSession {
 const SCROLL_EDGE = 110;
 const SCROLL_STEP = 10;
 
-export function ItemList({ items, sortable, onToggle, onEdit, onReorder }: Props) {
+export function ItemList<T extends ItemLike>({
+  items,
+  sortable,
+  onToggle,
+  onEdit,
+  onReorder,
+}: Props<T>) {
   const [drag, setDrag] = useState<DragView | null>(null);
   const session = useRef<DragSession | null>(null);
   const rowRefs = useRef(new Map<string, HTMLLIElement>());
@@ -139,16 +153,23 @@ export function ItemList({ items, sortable, onToggle, onEdit, onReorder }: Props
           className={`item${item.checked ? ' item-checked' : ''}${drag?.id === item.id ? ' item-dragging' : ''}`}
           style={rowStyle(index)}
         >
-          <label className="item-main">
-            <input type="checkbox" checked={item.checked} onChange={() => onToggle(item.id)} />
-            <span className="checkbox" aria-hidden="true">
-              <Icon name="check" size={18} />
-            </span>
-            <span className="item-name">
-              {item.quantity > 1 && <span className="item-qty">{item.quantity}× </span>}
-              {item.name}
-            </span>
-          </label>
+          {onToggle ? (
+            <label className="item-main">
+              <input type="checkbox" checked={item.checked} onChange={() => onToggle(item.id)} />
+              <span className="checkbox" aria-hidden="true">
+                <Icon name="check" size={18} />
+              </span>
+              <ItemName item={item} />
+            </label>
+          ) : (
+            <button
+              type="button"
+              className="item-main item-main-plain"
+              onClick={() => onEdit(item)}
+            >
+              <ItemName item={item} />
+            </button>
+          )}
           <button
             type="button"
             className="icon-btn icon-btn-subtle"
@@ -174,5 +195,14 @@ export function ItemList({ items, sortable, onToggle, onEdit, onReorder }: Props
         </li>
       ))}
     </ul>
+  );
+}
+
+function ItemName({ item }: { item: ItemLike }) {
+  return (
+    <span className="item-name">
+      {item.quantity > 1 && <span className="item-qty">{item.quantity}× </span>}
+      {item.name}
+    </span>
   );
 }

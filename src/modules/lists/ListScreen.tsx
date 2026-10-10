@@ -1,13 +1,16 @@
-import { useMemo, useRef, useState, type FormEvent } from 'react';
+import { useMemo, useState } from 'react';
 import { ActionSheet, ConfirmDialog, NameSheet } from '../../core/components/dialogs';
 import { Icon } from '../../core/components/Icon';
 import { ProgressBar } from '../../core/components/ProgressBar';
 import { goLists, openList } from './routes';
 import { showToast } from '../../core/lib/toast';
-import { byOrder, percent, plainInput } from '../../core/lib/util';
-import { parseQuantity, sortItems } from './util';
+import { byOrder, percent } from '../../core/lib/util';
+import { sortItems } from './util';
 import {
   addItem,
+  createLabel,
+  deleteLabel,
+  updateLabel,
   checkedIds,
   deleteItem,
   deleteList,
@@ -22,13 +25,15 @@ import {
   updateItem,
 } from './store';
 import { useAppState } from '../../core/store';
-import { MAX_NAME_LENGTH } from '../../core/types';
 import type { Item, Label, PackList, SortMode } from './types';
 import { ItemEditSheet } from './ItemEditSheet';
 import { ItemList } from './ItemList';
-import { LabelSheet } from './LabelSheet';
+import { LabelSheet, type LabelActions } from './LabelSheet';
+import { AddItemBar, NO_LABEL } from './AddItemBar';
+import { openTemplate } from '../templates/routes';
+import { saveListAsTemplate } from '../templates/store';
+import { TemplateDetailsSheet } from '../templates/TemplateDetailsSheet';
 
-const NO_LABEL = 'none';
 /** 'all', NO_LABEL or a label id. */
 type Filter = string;
 
@@ -39,7 +44,7 @@ const SORT_LABELS: Record<SortMode, string> = {
 };
 
 type Dialog =
-  | { kind: 'menu' | 'rename' | 'delete' | 'labels' }
+  | { kind: 'menu' | 'rename' | 'delete' | 'labels' | 'template' }
   | { kind: 'item'; item: Item };
 
 interface Group {
@@ -54,10 +59,8 @@ export function ListScreen({ list }: { list: PackList }) {
   const { data } = useAppState();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
-  const [newName, setNewName] = useState('');
   const [newLabelId, setNewLabelId] = useState<string>(NO_LABEL);
   const [dialog, setDialog] = useState<Dialog | null>(null);
-  const addInput = useRef<HTMLInputElement>(null);
   const close = () => setDialog(null);
 
   const labels = useMemo(
@@ -72,7 +75,6 @@ export function ListScreen({ list }: { list: PackList }) {
   const labelIds = new Set(labels.map((label) => label.id));
   // Fall back gracefully when the selected label has been deleted in the meantime.
   const activeFilter = filter === 'all' || filter === NO_LABEL || labelIds.has(filter) ? filter : 'all';
-  const targetLabelId = labelIds.has(newLabelId) ? newLabelId : null;
   const search = query.trim().toLocaleLowerCase('nl');
 
   const groups = useMemo<Group[]>(() => {
@@ -118,14 +120,10 @@ export function ListScreen({ list }: { list: PackList }) {
     if (next !== 'all') setNewLabelId(next);
   };
 
-  const submitNewItem = (event: FormEvent) => {
-    event.preventDefault();
-    // "7x sokken" adds one item with a quantity of seven.
-    const { name, quantity } = parseQuantity(newName);
-    if (addItem(list.id, name, targetLabelId, quantity)) {
-      setNewName('');
-      addInput.current?.focus();
-    }
+  const labelActions: LabelActions = {
+    create: (name) => createLabel(list.id, name),
+    update: updateLabel,
+    remove: deleteLabel,
   };
 
   /** Checks or unchecks everything, with a way back in case it was a slip of the thumb. */
@@ -302,42 +300,12 @@ export function ListScreen({ list }: { list: PackList }) {
         )}
       </main>
 
-      <form className="bottom-bar add-bar" onSubmit={submitNewItem}>
-        {labels.length > 0 && (
-          <select
-            className="select"
-            aria-label="Label voor het nieuwe item"
-            value={targetLabelId ?? NO_LABEL}
-            onChange={(event) => setNewLabelId(event.target.value)}
-          >
-            <option value={NO_LABEL}>Geen label</option>
-            {labels.map((label) => (
-              <option key={label.id} value={label.id}>
-                {label.name}
-              </option>
-            ))}
-          </select>
-        )}
-        <input
-          ref={addInput}
-          type="text"
-          value={newName}
-          placeholder="Item toevoegen"
-          aria-label="Nieuw item"
-          maxLength={MAX_NAME_LENGTH}
-          {...plainInput}
-          enterKeyHint="done"
-          onChange={(event) => setNewName(event.target.value)}
-        />
-        <button
-          type="submit"
-          className="btn btn-primary btn-square"
-          aria-label="Item toevoegen"
-          disabled={!newName.trim()}
-        >
-          <Icon name="plus" />
-        </button>
-      </form>
+      <AddItemBar
+        labels={labels}
+        labelId={newLabelId}
+        onLabelChange={setNewLabelId}
+        onAdd={(name, quantity, labelId) => addItem(list.id, name, labelId, quantity) !== null}
+      />
 
       {dialog?.kind === 'menu' && (
         <ActionSheet
@@ -358,6 +326,12 @@ export function ListScreen({ list }: { list: PackList }) {
             },
             { label: 'Labels beheren', icon: 'tag', run: () => setDialog({ kind: 'labels' }) },
             { label: 'Lijst hernoemen', icon: 'edit', run: () => setDialog({ kind: 'rename' }) },
+            {
+              label: 'Opslaan als template',
+              icon: 'template',
+              disabled: total === 0,
+              run: () => setDialog({ kind: 'template' }),
+            },
             {
               label: 'Lijst dupliceren',
               icon: 'copy',
@@ -407,8 +381,23 @@ export function ListScreen({ list }: { list: PackList }) {
         />
       )}
 
+      {dialog?.kind === 'template' && (
+        <TemplateDetailsSheet
+          title="Opslaan als template"
+          submitLabel="Opslaan"
+          initialName={list.name}
+          intro="De labels, items en aantallen worden gekopieerd, zonder vinkjes. Latere wijzigingen in deze lijst veranderen de template niet."
+          onClose={close}
+          onSubmit={(name, categoryId) => {
+            close();
+            const id = saveListAsTemplate(list.id, name, categoryId);
+            if (id) showToast('Template opgeslagen.', { label: 'Bekijken', run: () => openTemplate(id) });
+          }}
+        />
+      )}
+
       {dialog?.kind === 'labels' && (
-        <LabelSheet listId={list.id} labels={labels} itemCounts={itemCounts} onClose={close} />
+        <LabelSheet labels={labels} itemCounts={itemCounts} actions={labelActions} onClose={close} />
       )}
 
       {dialog?.kind === 'item' && (

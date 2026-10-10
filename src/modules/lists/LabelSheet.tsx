@@ -3,29 +3,43 @@ import { ConfirmDialog } from '../../core/components/dialogs';
 import { Icon } from '../../core/components/Icon';
 import { Sheet } from '../../core/components/Sheet';
 import { plainInput } from '../../core/lib/util';
-import { createLabel, deleteLabel, updateLabel } from './store';
 import { MAX_NAME_LENGTH } from '../../core/types';
-import { LABEL_COLORS, type Label } from './types';
+import { LABEL_COLORS, type LabelLike } from './types';
+
+/** What the sheet does with labels; a list and a template each store them in their own way. */
+export interface LabelActions {
+  create: (name: string) => string | null;
+  update: (id: string, patch: { name?: string; color?: string }) => void;
+  remove: (id: string) => void;
+}
 
 interface Props {
-  listId: string;
-  labels: Label[];
+  labels: LabelLike[];
   itemCounts: Map<string, number>;
+  actions: LabelActions;
   onClose: () => void;
 }
 
-function LabelRow({ label, onDelete }: { label: Label; onDelete: () => void }) {
+function LabelRow({
+  label,
+  onUpdate,
+  onDelete,
+}: {
+  label: LabelLike;
+  onUpdate: LabelActions['update'];
+  onDelete: () => void;
+}) {
   const [name, setName] = useState(label.name);
 
   // Saved when leaving the field; an emptied name falls back to the stored one.
   const save = () => {
-    if (name.trim()) updateLabel(label.id, { name });
+    if (name.trim()) onUpdate(label.id, { name });
     else setName(label.name);
   };
 
   const nextColor = () => {
     const index = LABEL_COLORS.indexOf(label.color);
-    updateLabel(label.id, { color: LABEL_COLORS[(index + 1) % LABEL_COLORS.length] });
+    onUpdate(label.id, { color: LABEL_COLORS[(index + 1) % LABEL_COLORS.length] });
   };
 
   return (
@@ -63,17 +77,17 @@ function LabelRow({ label, onDelete }: { label: Label; onDelete: () => void }) {
   );
 }
 
-export function LabelSheet({ listId, labels, itemCounts, onClose }: Props) {
+export function LabelSheet({ labels, itemCounts, actions, onClose }: Props) {
   const [newName, setNewName] = useState('');
-  const [deleting, setDeleting] = useState<Label | null>(null);
+  const [deleting, setDeleting] = useState<LabelLike | null>(null);
 
   const add = (event: FormEvent) => {
     event.preventDefault();
-    if (createLabel(listId, newName)) setNewName('');
+    if (actions.create(newName)) setNewName('');
   };
 
-  const remove = (label: Label) => {
-    if ((itemCounts.get(label.id) ?? 0) === 0) deleteLabel(label.id);
+  const remove = (label: LabelLike) => {
+    if ((itemCounts.get(label.id) ?? 0) === 0) actions.remove(label.id);
     else setDeleting(label);
   };
 
@@ -86,7 +100,12 @@ export function LabelSheet({ listId, labels, itemCounts, onClose }: Props) {
       ) : (
         <ul className="label-rows">
           {labels.map((label) => (
-            <LabelRow key={label.id} label={label} onDelete={() => remove(label)} />
+            <LabelRow
+              key={label.id}
+              label={label}
+              onUpdate={actions.update}
+              onDelete={() => remove(label)}
+            />
           ))}
         </ul>
       )}
@@ -115,7 +134,7 @@ export function LabelSheet({ listId, labels, itemCounts, onClose }: Props) {
           danger
           onCancel={() => setDeleting(null)}
           onConfirm={() => {
-            deleteLabel(deleting.id);
+            actions.remove(deleting.id);
             setDeleting(null);
           }}
         />

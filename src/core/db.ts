@@ -5,7 +5,14 @@ const DB_NAME = 'paklijsten';
 
 /** Stores holding user data; each maps to the array of the same name in AppData. */
 export type DataStore = keyof AppData;
-export const DATA_STORES: DataStore[] = ['lists', 'labels', 'items', 'notes'];
+export const DATA_STORES: DataStore[] = [
+  'lists',
+  'labels',
+  'items',
+  'notes',
+  'templates',
+  'templateCategories',
+];
 
 export type StoreName = DataStore | 'settings';
 const ALL_STORES: StoreName[] = [...DATA_STORES, 'settings'];
