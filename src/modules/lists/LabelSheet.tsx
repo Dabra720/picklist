@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from 'react';
-import { ConfirmDialog } from '../components/dialogs';
-import { Icon } from '../components/Icon';
-import { Sheet } from '../components/Sheet';
-import { plainInput } from '../lib/util';
-import { createLabel, deleteLabel, updateLabel } from '../store/store';
-import { LABEL_COLORS, MAX_NAME_LENGTH, type Label } from '../types';
+import { ConfirmDialog } from '../../core/components/dialogs';
+import { Icon } from '../../core/components/Icon';
+import { Sheet } from '../../core/components/Sheet';
+import { plainInput } from '../../core/lib/util';
+import { createLabel, deleteLabel, updateLabel } from './store';
+import { MAX_NAME_LENGTH } from '../../core/types';
+import { LABEL_COLORS, type Label } from './types';
 
 interface Props {
   listId: string;

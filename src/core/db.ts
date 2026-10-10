@@ -1,15 +1,21 @@
-import type { AppData } from '../types';
+import { DB_VERSION, migrate } from './migrations';
+import type { AppData } from './types';
 
 const DB_NAME = 'paklijsten';
-// Bump when the schema changes and add a migration step in `upgrade`.
-// Never delete or recreate existing stores there: user data must survive app updates.
-// Version history:
-//   1: lists, labels, items
-//   2: notes (added; existing stores are left untouched)
-const DB_VERSION = 2;
 
-export type StoreName = 'lists' | 'labels' | 'items' | 'notes';
-const STORES: StoreName[] = ['lists', 'labels', 'items', 'notes'];
+/** Stores holding user data; each maps to the array of the same name in AppData. */
+export type DataStore = keyof AppData;
+export const DATA_STORES: DataStore[] = ['lists', 'labels', 'items', 'notes'];
+
+export type StoreName = DataStore | 'settings';
+const ALL_STORES: StoreName[] = [...DATA_STORES, 'settings'];
+
+/** A key-value pair in the settings store. */
+export interface SettingRecord {
+  id: string;
+  value: unknown;
+  updatedAt: number;
+}
 
 export interface Write {
   store: StoreName;
@@ -19,13 +25,6 @@ export interface Write {
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
-// Only adds stores that are missing, so it migrates any older version without touching data.
-function upgrade(db: IDBDatabase) {
-  for (const name of STORES) {
-    if (!db.objectStoreNames.contains(name)) db.createObjectStore(name, { keyPath: 'id' });
-  }
-}
-
 function openDb(): Promise<IDBDatabase> {
   if (dbPromise) return dbPromise;
   dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
@@ -34,8 +33,13 @@ function openDb(): Promise<IDBDatabase> {
       return;
     }
     const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = () => upgrade(request.result);
-    request.onblocked = () => reject(new Error('De database is in gebruik door een ander tabblad.'));
+    request.onupgradeneeded = (event) => {
+      // Runs inside the upgrade transaction: if any step fails, the whole upgrade is rolled back
+      // and the database stays at its old version with its data intact.
+      migrate(request.result, request.transaction!, event.oldVersion);
+    };
+    request.onblocked = () =>
+      reject(new Error('De database is in gebruik door een ander tabblad.'));
     request.onerror = () => reject(request.error ?? new Error('Database openen mislukt.'));
     request.onsuccess = () => {
       const db = request.result;
@@ -72,22 +76,23 @@ function getAll<T>(tx: IDBTransaction, store: StoreName): Promise<T[]> {
   });
 }
 
-export async function loadAll(): Promise<AppData> {
+export async function loadAll(): Promise<{ data: AppData; settings: SettingRecord[] }> {
   const db = await openDb();
-  const tx = db.transaction(STORES, 'readonly');
-  const [lists, labels, items, notes] = await Promise.all([
-    getAll<AppData['lists'][number]>(tx, 'lists'),
-    getAll<AppData['labels'][number]>(tx, 'labels'),
-    getAll<AppData['items'][number]>(tx, 'items'),
-    getAll<AppData['notes'][number]>(tx, 'notes'),
+  const tx = db.transaction(ALL_STORES, 'readonly');
+  const [settings, ...arrays] = await Promise.all([
+    getAll<SettingRecord>(tx, 'settings'),
+    ...DATA_STORES.map((name) => getAll<unknown>(tx, name)),
   ]);
-  return { lists, labels, items, notes };
+  const data = Object.fromEntries(
+    DATA_STORES.map((name, i) => [name, arrays[i]]),
+  ) as unknown as AppData;
+  return { data, settings };
 }
 
 /** Applies all writes in a single transaction, so a change is saved completely or not at all. */
 export async function applyWrites(writes: Write[]): Promise<void> {
   const db = await openDb();
-  const tx = db.transaction(STORES, 'readwrite');
+  const tx = db.transaction(ALL_STORES, 'readwrite');
   for (const write of writes) {
     const store = tx.objectStore(write.store);
     write.put?.forEach((record) => store.put(record));
@@ -96,10 +101,11 @@ export async function applyWrites(writes: Write[]): Promise<void> {
   await transactionDone(tx);
 }
 
+/** Replaces all user data (not the settings) in one transaction. */
 export async function replaceAll(data: AppData): Promise<void> {
   const db = await openDb();
-  const tx = db.transaction(STORES, 'readwrite');
-  for (const name of STORES) {
+  const tx = db.transaction(DATA_STORES, 'readwrite');
+  for (const name of DATA_STORES) {
     const store = tx.objectStore(name);
     store.clear();
     data[name].forEach((record) => store.put(record));

@@ -1,23 +1,21 @@
+import type { BaseRecord } from '../../core/types';
+
 export type SortMode = 'manual' | 'alpha' | 'unchecked';
 
-export interface PackList {
-  id: string;
+export interface PackList extends BaseRecord {
   name: string;
   order: number;
   sortMode: SortMode;
-  createdAt: number;
 }
 
-export interface Label {
-  id: string;
+export interface Label extends BaseRecord {
   listId: string;
   name: string;
   color: string;
   order: number;
 }
 
-export interface Item {
-  id: string;
+export interface Item extends BaseRecord {
   listId: string;
   labelId: string | null;
   name: string;
@@ -26,23 +24,6 @@ export interface Item {
   checked: boolean;
   order: number;
 }
-
-export interface Note {
-  id: string;
-  title: string;
-  body: string;
-  createdAt: number;
-  updatedAt: number;
-}
-
-export interface AppData {
-  lists: PackList[];
-  labels: Label[];
-  items: Item[];
-  notes: Note[];
-}
-
-export const EMPTY_DATA: AppData = { lists: [], labels: [], items: [], notes: [] };
 
 export const SORT_MODES: SortMode[] = ['manual', 'alpha', 'unchecked'];
 
@@ -58,6 +39,4 @@ export const LABEL_COLORS = [
   '#64748b',
 ];
 
-export const MAX_NAME_LENGTH = 100;
 export const MAX_QUANTITY = 999;
-export const MAX_NOTE_LENGTH = 50_000;

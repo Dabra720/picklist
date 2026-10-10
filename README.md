@@ -104,35 +104,55 @@ installatie-icoon in de adresbalk.
 
 ## Gegevens en updates
 
-- Lijsten, labels, items, vinkjes, volgordes en notities staan in IndexedDB (database
-  `paklijsten`). Elke wijziging wordt direct opgeslagen; notities kort na het typen en altijd
-  bij het verlaten van de notitie of de app.
-- Versie 2 van de database voegt de store `notes` toe. Bestaande stores en gegevens blijven bij
-  die upgrade onaangeroerd.
+- Alle gegevens staan in IndexedDB (database `paklijsten`): lijsten, labels, items, vinkjes,
+  volgordes, notities en instellingen zoals het thema. Elke wijziging wordt direct opgeslagen;
+  notities kort na het typen en altijd bij het verlaten van de notitie of de app.
+- Elk record heeft een `id` (UUID), `createdAt` en `updatedAt`. Daarmee kunnen back-ups later
+  worden samengevoegd en kan de app later tussen apparaten synchroniseren.
 - De service worker cachet alleen de bestanden van de app. Een update vervangt die bestanden en
   raakt de database niet aan.
-- Wijzigt het datamodel later, verhoog dan `DB_VERSION` in [src/db/idb.ts](src/db/idb.ts) en
-  voeg een migratiestap toe in `upgrade`. Verwijder daar nooit bestaande stores.
+- Wijzigt het datamodel, voeg dan een stap toe aan `MIGRATIONS` in
+  [src/core/migrations.ts](src/core/migrations.ts). De databaseversie volgt daar automatisch uit.
+  Een stap mag stores toevoegen en velden aanvullen, maar nooit stores of gegevens verwijderen.
+
+  | Versie | Wijziging |
+  | ------ | --------- |
+  | 1 | Paklijsten: `lists`, `labels`, `items` |
+  | 2 | Notities: `notes` |
+  | 3 | Store `settings`; `createdAt`/`updatedAt` op elk record (labels en items krijgen de datum van hun lijst) |
+
 - Een geïmporteerde back-up wordt eerst gecontroleerd (structuur, verplichte velden, verwijzingen
   tussen lijsten, labels en items). Pas na bevestiging worden de bestaande gegevens vervangen.
+  Instellingen blijven bij een import staan.
 
 ## Projectstructuur
 
+De app bestaat uit een kern en losse modules. Een module meldt zich aan in
+`src/modules/index.ts` met zijn schermen (routes), menu-item en opstartstappen; de kern hoeft
+daarvoor niet te veranderen.
+
 ```
 src/
-  main.tsx            Startpunt: thema, database laden, service worker registreren
-  App.tsx             Kiest het scherm op basis van de route
-  types.ts            Datamodellen (PackList, Label, Item, Note)
-  styles.css          Alle styling, met kleuren voor licht en donker
-  db/idb.ts           Dunne laag rond IndexedDB
-  store/store.ts      Gegevens in het geheugen plus alle bewerkingen
-  store/backup.ts     Export, import en validatie van back-ups
-  lib/                Route, thema, meldingen en hulpfuncties
-  components/         Herbruikbare bouwstenen (Sheet, dialogen, menu, ProgressBar, Icon)
-  screens/            Hoofdscherm, lijstscherm, notities en de bijbehorende sheets
+  main.tsx              Startpunt: thema, modules registreren, database laden, service worker
+  App.tsx               Kiest het scherm bij de route via het moduleregister
+  styles.css            Alle styling, met kleuren voor licht en donker
+  core/                 Gedeeld door alle modules
+    db.ts               Dunne laag rond IndexedDB
+    migrations.ts       Databasemigraties, één stap per versie
+    store.ts            Gegevens in het geheugen, schrijfwachtrij (commit), instellingen
+    router.ts           Hash-routes (#/<onderdeel>/<id>)
+    modules.ts          Wat een module aan de app vertelt (AppModule)
+    types.ts            BaseRecord en AppData
+    components/         Sheet, dialogen, ProgressBar, Icon, meldingen
+    lib/                Thema, meldingen, viewport en hulpfuncties
+  app/                  De schil rond de modules: menu, instellingen, back-up
+  modules/
+    index.ts            Alle modules, in menuvolgorde
+    lists/              Paklijsten: types, store, schermen, sheets
+    notes/              Notities: types, store, schermen
 scripts/
-  generate-icons.mjs  Maakt de PNG-iconen zonder externe pakketten
-public/               Iconen en favicon
+  generate-icons.mjs    Maakt de PNG-iconen zonder externe pakketten
+public/                 Iconen en favicon
 ```
 
 Gebouwd met React, TypeScript, Vite en `vite-plugin-pwa`. Verder geen runtime-afhankelijkheden.
