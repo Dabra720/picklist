@@ -77,6 +77,11 @@ export const MIGRATIONS: Migration[] = [
     description: 'Templates: templates, templateCategories',
     run: (db) => ['templates', 'templateCategories'].forEach((name) => createStore(db, name)),
   },
+  {
+    version: 5,
+    description: 'Taken: tasks, projects',
+    run: (db) => ['tasks', 'projects'].forEach((name) => createStore(db, name)),
+  },
 ];
 
 export const DB_VERSION = MIGRATIONS[MIGRATIONS.length - 1].version;

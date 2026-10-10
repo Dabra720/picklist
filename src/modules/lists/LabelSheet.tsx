@@ -13,19 +13,42 @@ export interface LabelActions {
   remove: (id: string) => void;
 }
 
+/** Words used by the sheet; projects (in tasks) use the same sheet with their own words. */
+export interface LabelTexts {
+  title: string;
+  intro: string;
+  one: string;
+  newPlaceholder: string;
+  deleteTitle: string;
+  deleteMessage: (name: string) => string;
+}
+
+const LABEL_TEXTS: LabelTexts = {
+  title: 'Labels',
+  intro: 'Met labels groepeer je items, bijvoorbeeld Kleding, Elektronica of Documenten.',
+  one: 'Label',
+  newPlaceholder: 'Nieuw label',
+  deleteTitle: 'Label verwijderen?',
+  deleteMessage: (name) =>
+    `De items met het label "${name}" blijven bewaard, maar hebben daarna geen label meer.`,
+};
+
 interface Props {
   labels: LabelLike[];
   itemCounts: Map<string, number>;
   actions: LabelActions;
+  texts?: LabelTexts;
   onClose: () => void;
 }
 
 function LabelRow({
   label,
+  one,
   onUpdate,
   onDelete,
 }: {
   label: LabelLike;
+  one: string;
   onUpdate: LabelActions['update'];
   onDelete: () => void;
 }) {
@@ -56,7 +79,7 @@ function LabelRow({
         type="text"
         value={name}
         maxLength={MAX_NAME_LENGTH}
-        aria-label="Label"
+        aria-label={one}
         {...plainInput}
         enterKeyHint="done"
         onChange={(event) => setName(event.target.value)}
@@ -68,7 +91,7 @@ function LabelRow({
       <button
         type="button"
         className="icon-btn icon-btn-subtle"
-        aria-label={`Label ${label.name} verwijderen`}
+        aria-label={`${one} ${label.name} verwijderen`}
         onClick={onDelete}
       >
         <Icon name="trash" size={20} />
@@ -77,7 +100,7 @@ function LabelRow({
   );
 }
 
-export function LabelSheet({ labels, itemCounts, actions, onClose }: Props) {
+export function LabelSheet({ labels, itemCounts, actions, texts = LABEL_TEXTS, onClose }: Props) {
   const [newName, setNewName] = useState('');
   const [deleting, setDeleting] = useState<LabelLike | null>(null);
 
@@ -92,17 +115,16 @@ export function LabelSheet({ labels, itemCounts, actions, onClose }: Props) {
   };
 
   return (
-    <Sheet title="Labels" onClose={onClose}>
+    <Sheet title={texts.title} onClose={onClose}>
       {labels.length === 0 ? (
-        <p className="sheet-text">
-          Met labels groepeer je items, bijvoorbeeld Kleding, Elektronica of Documenten.
-        </p>
+        <p className="sheet-text">{texts.intro}</p>
       ) : (
         <ul className="label-rows">
           {labels.map((label) => (
             <LabelRow
               key={label.id}
               label={label}
+              one={texts.one}
               onUpdate={actions.update}
               onDelete={() => remove(label)}
             />
@@ -114,8 +136,8 @@ export function LabelSheet({ labels, itemCounts, actions, onClose }: Props) {
         <input
           type="text"
           value={newName}
-          placeholder="Nieuw label"
-          aria-label="Nieuw label"
+          placeholder={texts.newPlaceholder}
+          aria-label={texts.newPlaceholder}
           maxLength={MAX_NAME_LENGTH}
           {...plainInput}
           enterKeyHint="done"
@@ -128,8 +150,8 @@ export function LabelSheet({ labels, itemCounts, actions, onClose }: Props) {
 
       {deleting && (
         <ConfirmDialog
-          title="Label verwijderen?"
-          message={`De items met het label "${deleting.name}" blijven bewaard, maar hebben daarna geen label meer.`}
+          title={texts.deleteTitle}
+          message={texts.deleteMessage(deleting.name)}
           confirmLabel="Verwijderen"
           danger
           onCancel={() => setDeleting(null)}

@@ -19,6 +19,9 @@ const PATHS = {
   menu: 'M4 7h16M4 12h16M4 17h16',
   note: 'M6 3h8l5 5v13H6zM14 3v5h5M9 13h7M9 17h5',
   template: 'M8 3h11v13H8zM5 7v14h11M11 7.5h5M11 11.5h5',
+  task: 'M4 5h16v14H4zM8 12l3 3 5-6',
+  board: 'M4 5h4v14H4zM10 5h4v9h-4zM16 5h4v6h-4z',
+  list: 'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',
   folder: 'M3 6h6l2 2h10v11H3z',
   checklist: 'M10 6h10M10 12h10M10 18h10M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5 2.5-2.5M3.5 18l1.5 1.5 2.5-2.5',
 } as const;
