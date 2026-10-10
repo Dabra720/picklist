@@ -677,7 +677,8 @@ input[type='search'] {
   cursor: pointer;
 }
 
-.item-main input {
+.item-main input,
+.check-row input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -705,14 +706,16 @@ input[type='search'] {
   stroke-width: 3;
 }
 
-.item-main input:checked + .checkbox {
+.item-main input:checked + .checkbox,
+.check-row input:checked + .checkbox {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--on-accent);
   animation: pop 0.22s ease;
 }
 
-.item-main input:focus-visible + .checkbox {
+.item-main input:focus-visible + .checkbox,
+.check-row input:focus-visible + .checkbox {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
@@ -990,6 +993,68 @@ input[type='search'] {
 .inline-form {
   display: flex;
   gap: 8px;
+}
+
+/* ---------- Check list (choices in sheets) ---------- */
+
+.check-list {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+}
+
+.check-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 60px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.check-row + .check-row {
+  border-top: 1px solid var(--border);
+}
+
+.check-row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.check-row-title {
+  font-weight: 600;
+}
+
+.check-row-detail {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: -4px 0 16px;
+  padding: 10px 14px 10px 30px;
+  list-style: disc;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.danger-text {
+  color: var(--danger);
+}
+
+.last-backup {
+  font-weight: 600;
+  color: var(--text);
 }
 
 /* ---------- Side menu ---------- */

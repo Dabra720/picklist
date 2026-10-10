@@ -1,12 +1,16 @@
 import { useRef, useState, type ChangeEvent } from 'react';
-import { ConfirmDialog } from '../core/components/dialogs';
 import { Icon } from '../core/components/Icon';
 import { Sheet } from '../core/components/Sheet';
 import { useTheme, type Theme } from '../core/lib/theme';
-import { showToast } from '../core/lib/toast';
-import { exportBackup, parseBackup } from './backup';
-import { importData, useAppState } from '../core/store';
-import type { AppData } from '../core/types';
+import { getSetting, useAppState } from '../core/store';
+import {
+  backupParts,
+  hasContent,
+  LAST_BACKUP_SETTING,
+  parseBackup,
+  type ParsedBackup,
+} from './backup';
+import { ExportSheet, ImportSheet } from './BackupSheets';
 
 const THEMES: { value: Theme; label: string }[] = [
   { value: 'system', label: 'Systeem' },
@@ -17,28 +21,19 @@ const THEMES: { value: Theme; label: string }[] = [
 // Refuse absurdly large files before reading them into memory.
 const MAX_IMPORT_BYTES = 20 * 1024 * 1024;
 
-function count(n: number, one: string, many: string): string {
-  return `${n} ${n === 1 ? one : many}`;
-}
+const dateFormat = new Intl.DateTimeFormat('nl', { dateStyle: 'long' });
 
 export function SettingsSheet({ onClose }: { onClose: () => void }) {
-  const { data } = useAppState();
+  // Re-render when data changes, so the backup options stay up to date.
+  useAppState();
   const [theme, setTheme] = useTheme();
-  const [pending, setPending] = useState<AppData | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [parsed, setParsed] = useState<ParsedBackup | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
-  const runImport = async (imported: AppData) => {
-    setPending(null);
-    try {
-      await importData(imported);
-      showToast(`Back-up teruggezet: ${count(imported.lists.length, 'lijst', 'lijsten')}, ${count(imported.notes.length, 'notitie', 'notities')}.`);
-      onClose();
-    } catch (cause) {
-      console.error(cause);
-      setError('Terugzetten is mislukt. Je bestaande gegevens zijn niet gewijzigd.');
-    }
-  };
+  const lastBackup = getSetting<number>(LAST_BACKUP_SETTING);
+  const anythingToExport = backupParts().some((part) => hasContent(part.key));
 
   const onFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -51,26 +46,11 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
     }
     try {
       const result = parseBackup(await file.text());
-      if (!result.ok) {
-        setError(result.error);
-      } else {
-        // Backups from before notes existed leave the notes on this device in place.
-        const imported = result.notesIncluded ? result.data : { ...result.data, notes: data.notes };
-        if (data.lists.length === 0 && data.notes.length === 0) await runImport(imported);
-        else setPending(imported);
-      }
+      if (result.ok) setParsed(result.backup);
+      else setError(result.error);
     } catch (cause) {
       console.error(cause);
       setError('Het bestand kon niet worden gelezen.');
-    }
-  };
-
-  const onExport = async () => {
-    try {
-      await exportBackup(data);
-    } catch (cause) {
-      console.error(cause);
-      showToast('Exporteren is mislukt.');
     }
   };
 
@@ -94,16 +74,21 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
 
       <h3 className="section-title">Back-up</h3>
       <p className="sheet-text">
-        Je lijsten en notities staan alleen op dit apparaat. Ze kunnen verdwijnen als je de app of de
+        Je gegevens staan alleen op dit apparaat. Ze kunnen verdwijnen als je de app of de
         websitegegevens verwijdert, of als het systeem opslagruimte vrijmaakt. Bewaar daarom af en
-        toe een back-up.
+        toe een back-up.{' '}
+        <strong className="last-backup">
+          {lastBackup
+            ? `Laatste volledige back-up: ${dateFormat.format(lastBackup)}.`
+            : 'Nog geen volledige back-up gemaakt.'}
+        </strong>
       </p>
       <div className="menu">
         <button
           type="button"
           className="menu-item"
-          onClick={onExport}
-          disabled={data.lists.length === 0 && data.notes.length === 0}
+          onClick={() => setExporting(true)}
+          disabled={!anythingToExport}
         >
           <Icon name="download" />
           Back-up exporteren
@@ -113,31 +98,22 @@ export function SettingsSheet({ onClose }: { onClose: () => void }) {
           Back-up terugzetten
         </button>
       </div>
-      <input
-        ref={fileInput}
-        type="file"
-        accept="application/json,.json"
-        hidden
-        onChange={onFile}
-      />
+      <input ref={fileInput} type="file" accept="application/json,.json" hidden onChange={onFile} />
       {error && (
         <p className="error-text" role="alert">
           {error}
         </p>
       )}
 
-      {pending && (
-        <ConfirmDialog
-          title="Gegevens overschrijven?"
-          message={
-            pending.notes === data.notes
-              ? `Je huidige ${count(data.lists.length, 'lijst wordt', 'lijsten worden')} vervangen door ${count(pending.lists.length, 'lijst', 'lijsten')} uit de back-up. Je notities blijven staan. Dit kan niet ongedaan worden gemaakt.`
-              : `Je huidige ${count(data.lists.length, 'lijst', 'lijsten')} en ${count(data.notes.length, 'notitie', 'notities')} worden vervangen door ${count(pending.lists.length, 'lijst', 'lijsten')} en ${count(pending.notes.length, 'notitie', 'notities')} uit de back-up. Dit kan niet ongedaan worden gemaakt.`
-          }
-          confirmLabel="Overschrijven"
-          danger
-          onConfirm={() => void runImport(pending)}
-          onCancel={() => setPending(null)}
+      {exporting && <ExportSheet onClose={() => setExporting(false)} />}
+      {parsed && (
+        <ImportSheet
+          backup={parsed}
+          onClose={() => setParsed(null)}
+          onDone={() => {
+            setParsed(null);
+            onClose();
+          }}
         />
       )}
     </Sheet>

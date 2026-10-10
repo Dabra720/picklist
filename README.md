@@ -21,8 +21,16 @@ account, geen server, en na de eerste keer laden volledig offline te gebruiken.
   via **Ongedaan maken**. Een nieuwe notitie die je leeg laat, verdwijnt vanzelf.
 - Menu (☰ linksboven) om te wisselen tussen **Paklijsten** en **Notities**, en voor de
   **Instellingen**.
-- Back-up exporteren en terugzetten als JSON (Menu → Instellingen). Een back-up bevat lijsten
-  én notities. Zet je een oudere back-up zonder notities terug, dan blijven je notities staan.
+- Back-ups als JSON (Menu → Instellingen):
+  - **Exporteren**: alles, of alleen de onderdelen die je kiest (Paklijsten, Notities,
+    Instellingen).
+  - **Terugzetten**: kies per onderdeel en kies **Samenvoegen** (voegt toe wat nieuw is; bij
+    iets wat al bestaat blijft de laatst gewijzigde versie staan; er wordt niets verwijderd) of
+    **Vervangen** (de gekozen onderdelen worden gewist en vervangen).
+  - Een back-up wordt eerst gecontroleerd. Kapotte of losse gegevens worden overgeslagen en
+    genoemd, in plaats van dat het hele bestand wordt geweigerd.
+  - Is je laatste volledige back-up ouder dan 30 dagen, dan krijg je (hooguit eens per week) een
+    melding met een knop om er direct een te maken.
 - Lichte en donkere weergave (volgt het systeem, of kies zelf).
 
 ## Aan de slag
@@ -121,9 +129,12 @@ installatie-icoon in de adresbalk.
   | 2 | Notities: `notes` |
   | 3 | Store `settings`; `createdAt`/`updatedAt` op elk record (labels en items krijgen de datum van hun lijst) |
 
-- Een geïmporteerde back-up wordt eerst gecontroleerd (structuur, verplichte velden, verwijzingen
-  tussen lijsten, labels en items). Pas na bevestiging worden de bestaande gegevens vervangen.
-  Instellingen blijven bij een import staan.
+- Back-upformaat (versie 3): per module een eigen deel met een eigen versienummer, zodat een
+  module zijn gegevens kan wijzigen zonder de andere te raken en een back-up ook maar een deel
+  kan bevatten. Een module beschrijft zijn deel in `src/modules/<module>/backup.ts`; de opbouw,
+  controle en het samenvoegen staan in [src/app/backup.ts](src/app/backup.ts). Back-ups uit
+  oudere versies (1 en 2) blijven werken. Instellingen die bij dit apparaat horen (zoals de datum
+  van de laatste back-up) gaan niet mee.
 
 ## Projectstructuur
 

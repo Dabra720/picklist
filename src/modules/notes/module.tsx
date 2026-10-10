@@ -1,4 +1,5 @@
 import type { AppModule } from '../../core/modules';
+import { notesBackup } from './backup';
 import { NoteScreen } from './NoteScreen';
 import { NotesScreen } from './NotesScreen';
 import { discardIfEmpty, removeEmptyNotes } from './store';
@@ -20,4 +21,5 @@ export const notesModule: AppModule = {
     if (route.segment === 'notitie' && route.param) discardIfEmpty(route.param);
   },
   loadHooks: [removeEmptyNotes],
+  backup: notesBackup,
 };

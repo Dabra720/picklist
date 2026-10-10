@@ -101,11 +101,15 @@ export async function applyWrites(writes: Write[]): Promise<void> {
   await transactionDone(tx);
 }
 
-/** Replaces all user data (not the settings) in one transaction. */
-export async function replaceAll(data: AppData): Promise<void> {
+/**
+ * Replaces the contents of the given data stores (not the settings) in one transaction: either
+ * all of them are saved, or nothing changes.
+ */
+export async function replaceStores(data: AppData, stores: DataStore[]): Promise<void> {
+  if (stores.length === 0) return;
   const db = await openDb();
-  const tx = db.transaction(DATA_STORES, 'readwrite');
-  for (const name of DATA_STORES) {
+  const tx = db.transaction(stores, 'readwrite');
+  for (const name of stores) {
     const store = tx.objectStore(name);
     store.clear();
     data[name].forEach((record) => store.put(record));

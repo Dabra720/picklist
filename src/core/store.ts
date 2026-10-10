@@ -1,5 +1,12 @@
 import { useSyncExternalStore } from 'react';
-import { applyWrites, loadAll, replaceAll, type SettingRecord, type Write } from './db';
+import {
+  applyWrites,
+  loadAll,
+  replaceStores,
+  type DataStore,
+  type SettingRecord,
+  type Write,
+} from './db';
 import { showToast } from './lib/toast';
 import { EMPTY_DATA, type AppData } from './types';
 
@@ -88,10 +95,13 @@ export async function initStore() {
   }
 }
 
-/** Replaces all user data with imported data. Rejects (and keeps the old data) if saving fails. */
-export async function importData(data: AppData): Promise<void> {
+/**
+ * Saves imported data: the given stores are replaced by their contents in `data` in one
+ * transaction. Rejects (and keeps the old data) if saving fails.
+ */
+export async function importData(data: AppData, stores: DataStore[]): Promise<void> {
   await writeQueue;
-  await replaceAll(data);
+  await replaceStores(data, stores);
   setState({ ...state, data });
 }
 
@@ -99,23 +109,49 @@ export async function importData(data: AppData): Promise<void> {
 // Small key-value preferences, stored in IndexedDB so they can travel with backups and sync.
 
 const settings = new Map<string, unknown>();
+const settingTimes = new Map<string, number>();
 
 function loadSettings(records: SettingRecord[]) {
   settings.clear();
-  for (const record of records) settings.set(record.id, record.value);
+  settingTimes.clear();
+  for (const record of records) {
+    settings.set(record.id, record.value);
+    settingTimes.set(record.id, record.updatedAt ?? 0);
+  }
 }
 
 export function getSetting<T>(key: string): T | undefined {
   return settings.get(key) as T | undefined;
 }
 
+/** All settings as stored records. */
+export function getSettingRecords(): SettingRecord[] {
+  return [...settingTimes.entries()].map(([id, updatedAt]) => ({
+    id,
+    value: settings.get(id),
+    updatedAt,
+  }));
+}
+
 export function setSetting(key: string, value: unknown) {
   if (value === undefined) {
     settings.delete(key);
+    settingTimes.delete(key);
     enqueue(() => applyWrites([{ store: 'settings', remove: [key] }]));
     return;
   }
-  settings.set(key, value);
   const record: SettingRecord = { id: key, value, updatedAt: Date.now() };
+  settings.set(key, value);
+  settingTimes.set(key, record.updatedAt);
   enqueue(() => applyWrites([{ store: 'settings', put: [record] }]));
+}
+
+/** Saves settings from a backup as they were, keeping their own updatedAt. */
+export function putSettingRecords(records: SettingRecord[]) {
+  if (records.length === 0) return;
+  for (const record of records) {
+    settings.set(record.id, record.value);
+    settingTimes.set(record.id, record.updatedAt);
+  }
+  enqueue(() => applyWrites([{ store: 'settings', put: records }]));
 }

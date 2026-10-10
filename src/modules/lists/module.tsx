@@ -1,4 +1,5 @@
 import type { AppModule } from '../../core/modules';
+import { listsBackup } from './backup';
 import { ListScreen } from './ListScreen';
 import { ListsScreen } from './ListsScreen';
 import { normalizeLists } from './store';
@@ -16,4 +17,5 @@ export const listsModule: AppModule = {
     },
   },
   loadHooks: [normalizeLists],
+  backup: listsBackup,
 };
