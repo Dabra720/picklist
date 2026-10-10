@@ -1,4 +1,4 @@
-import type { DataStore, SettingRecord } from '../core/db';
+import { DATA_STORES, type DataStore, type SettingRecord } from '../core/db';
 import { showToast } from '../core/lib/toast';
 import { fail, InvalidBackup, isRecord, isValidId } from '../core/lib/validate';
 import type { ModuleBackup } from '../core/modules';
@@ -48,7 +48,9 @@ const SETTINGS_PART: BackupPart = { key: SETTINGS_KEY, label: 'Instellingen' };
 // which imports this file, so MODULES is not available yet at that moment.
 function moduleParts(): ModulePart[] {
   return MODULES.flatMap((module) =>
-    module.backup ? [{ key: module.id, label: module.label, backup: module.backup }] : [],
+    module.backup
+      ? [{ key: module.id, label: module.backup.label ?? module.label, backup: module.backup }]
+      : [],
   );
 }
 
@@ -306,7 +308,6 @@ export function planImport(
 ): { data: AppData; stores: DataStore[]; result: ImportResult } {
   const result: ImportResult = { added: 0, updated: 0, unchanged: 0, total: 0 };
   let data: AppData = { ...current };
-  const stores: DataStore[] = [];
   for (const part of parts) {
     const modulePart = moduleParts().find((candidate) => candidate.key === part.key);
     if (!modulePart) continue;
@@ -320,10 +321,14 @@ export function planImport(
             ? incoming
             : mergeRecords(current[store] as BaseRecord[], incoming, result),
       };
-      stores.push(store);
     }
-    if (modulePart.backup.repair) data = modulePart.backup.repair(data);
   }
+  // References can cross modules (a note's tags live in another part), so every module tidies up
+  // after any import; everything that changed is saved in the same transaction.
+  for (const part of moduleParts()) {
+    if (part.backup.repair) data = part.backup.repair(data);
+  }
+  const stores = DATA_STORES.filter((store) => data[store] !== current[store]);
   if (mode === 'replace') result.added = result.total;
   return { data, stores, result };
 }

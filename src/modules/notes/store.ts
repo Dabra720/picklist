@@ -17,7 +17,7 @@ export const removeEmptyNotes: LoadHook = (data) => {
 export function createNote(): string {
   const data = getData();
   const now = Date.now();
-  const note: Note = { id: uid(), title: '', body: '', createdAt: now, updatedAt: now };
+  const note: Note = { id: uid(), title: '', body: '', tagIds: [], createdAt: now, updatedAt: now };
   commit({ ...data, notes: [...data.notes, note] }, [{ store: 'notes', put: [note] }]);
   return note.id;
 }

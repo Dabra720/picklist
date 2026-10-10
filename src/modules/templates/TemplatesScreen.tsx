@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SearchButton } from '../search/SearchButton';
 import { MenuButton } from '../../app/AppMenu';
 import { Icon } from '../../core/components/Icon';
 import { useAppState } from '../../core/store';
@@ -25,6 +26,7 @@ export function TemplatesScreen() {
       <header className="topbar">
         <MenuButton current="templates" />
         <h1>Templates</h1>
+        <SearchButton />
         <button
           type="button"
           className="icon-btn"

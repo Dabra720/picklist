@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { SearchButton } from '../search/SearchButton';
+import { TagChips } from '../search/TagPicker';
 import { MenuButton } from '../../app/AppMenu';
 import { Icon } from '../../core/components/Icon';
 import { openNote } from './routes';
@@ -26,6 +28,7 @@ export function NotesScreen() {
       <header className="topbar">
         <MenuButton current="notes" />
         <h1>Notities</h1>
+        <SearchButton />
       </header>
 
       <main className="content">
@@ -72,6 +75,7 @@ export function NotesScreen() {
                         <span className="note-card-title">{heading}</span>
                         {preview && <span className="note-card-preview">{preview}</span>}
                         <span className="note-card-date">{formatNoteDate(note.updatedAt)}</span>
+                        <TagChips tagIds={note.tagIds} tags={data.tags} />
                       </button>
                     </li>
                   );

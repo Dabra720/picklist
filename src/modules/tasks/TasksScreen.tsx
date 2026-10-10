@@ -1,4 +1,5 @@
 import { useMemo, useState, type DragEvent, type FormEvent } from 'react';
+import { SearchButton } from '../search/SearchButton';
 import { MenuButton } from '../../app/AppMenu';
 import { ActionSheet } from '../../core/components/dialogs';
 import { Icon } from '../../core/components/Icon';
@@ -143,6 +144,7 @@ export function TasksScreen() {
     <TaskRow
       task={task}
       project={task.projectId ? projectById.get(task.projectId) : undefined}
+      tags={data.tags}
       showProject={showProject}
       onToggle={() => toggle(task)}
       onOpen={() => openTask(task.id)}
@@ -174,6 +176,7 @@ export function TasksScreen() {
       <header className="topbar">
         <MenuButton current="tasks" />
         <h1>Taken</h1>
+        <SearchButton />
         <div className="segmented segmented-icons" role="radiogroup" aria-label="Weergave">
           {(
             [

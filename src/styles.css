@@ -995,6 +995,96 @@ input[type='search'] {
   gap: 8px;
 }
 
+/* ---------- Tags and search ---------- */
+
+.tag-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tag-chip {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 650;
+  /* A soft tint of the tag's colour; text in the colour itself, readable in both themes. */
+  background: color-mix(in srgb, var(--tag) 18%, transparent);
+  color: color-mix(in srgb, var(--tag) 75%, var(--text));
+}
+
+.list-card-main .tag-chips,
+.note-card .tag-chips {
+  margin-top: 4px;
+}
+
+.tag-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.tag-picker {
+  margin-bottom: 16px;
+}
+
+.sheet-link {
+  margin-top: 12px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.chip-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.search-large {
+  flex: none;
+}
+
+.search-date {
+  align-self: flex-start;
+}
+
+.result-count {
+  padding: 0 4px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.search-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: var(--text-muted);
+}
+
+.search-result .icon {
+  margin-top: 1px;
+}
+
+.search-result-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  color: var(--text);
+}
+
+.search-snippet {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
 /* ---------- Tab bar ---------- */
 
 :root {

@@ -6,6 +6,8 @@ export interface PackList extends BaseRecord {
   name: string;
   order: number;
   sortMode: SortMode;
+  /** Global tags (see the search module). */
+  tagIds: string[];
 }
 
 export interface Label extends BaseRecord {

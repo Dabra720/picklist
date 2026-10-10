@@ -26,6 +26,7 @@ export function createList(name: string): string | null {
     name: clean,
     order: nextOrder(data.lists),
     sortMode: 'manual',
+    tagIds: [],
     createdAt: now,
     updatedAt: now,
   };

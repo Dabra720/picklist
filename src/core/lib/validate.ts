@@ -78,3 +78,9 @@ export class IdSet {
 export function count(n: number, one: string, many: string): string {
   return `${n} ${n === 1 ? one : many}`;
 }
+
+/** A list of ids (e.g. tag ids): valid, without duplicates. Unknown ids are removed later. */
+export function readIdList(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((id, index): id is string => isValidId(id) && value.indexOf(id) === index);
+}

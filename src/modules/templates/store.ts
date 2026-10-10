@@ -272,6 +272,7 @@ export function createListFromTemplate(templateId: string, name: string): string
     name: clean,
     order: nextOrder(data.lists),
     sortMode: 'manual',
+    tagIds: [],
     createdAt: now,
     updatedAt: now,
   };

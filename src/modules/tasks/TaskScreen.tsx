@@ -7,6 +7,7 @@ import { byOrder, plainInput } from '../../core/lib/util';
 import { useAppState } from '../../core/store';
 import { MAX_NAME_LENGTH } from '../../core/types';
 import { goTasks } from './routes';
+import { TagField } from '../search/TagPicker';
 import {
   addSubtask,
   deleteSubtask,
@@ -228,6 +229,11 @@ export function TaskScreen({ task }: { task: Task }) {
             ))}
           </select>
         </label>
+
+        <div className="field">
+          <span>Tags</span>
+          <TagField kind="task" id={task.id} tagIds={task.tagIds} />
+        </div>
 
         <section className="field" aria-labelledby="task-subtasks">
           <span id="task-subtasks">

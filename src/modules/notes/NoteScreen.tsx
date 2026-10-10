@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { ActionSheet, ConfirmDialog } from '../../core/components/dialogs';
 import { Icon } from '../../core/components/Icon';
 import { goNotes } from './routes';
+import { TagField } from '../search/TagPicker';
 import { showToast } from '../../core/lib/toast';
 import { plainInput } from '../../core/lib/util';
 import { formatNoteDate, isEmptyNote } from './util';
@@ -146,6 +147,7 @@ export function NoteScreen({ note }: { note: Note }) {
             schedule({ title: event.target.value, body });
           }}
         />
+        <TagField kind="note" id={note.id} tagIds={note.tagIds} />
         <textarea
           ref={textarea}
           className="note-body"

@@ -6,6 +6,7 @@ import {
   isRecord,
   isValidId,
   readArray,
+  readIdList,
   readOrder,
   readTimes,
   Skipped,
@@ -88,6 +89,7 @@ export const tasksBackup: ModuleBackup = {
           isValidId(record.projectId) && projectIds.has(record.projectId) ? record.projectId : null,
         order: readOrder(record, index),
         subtasks: readSubtasks(record.subtasks),
+        tagIds: readIdList(record.tagIds),
         completedAt:
           status === 'done'
             ? typeof record.completedAt === 'number'
