@@ -156,6 +156,14 @@ export const MIGRATIONS: Migration[] = [
       );
     },
   },
+  {
+    version: 7,
+    description: 'Herinneringen: reminders',
+    run: (db, _tx, done) => {
+      createStore(db, 'reminders');
+      done();
+    },
+  },
 ];
 
 export const DB_VERSION = MIGRATIONS[MIGRATIONS.length - 1].version;

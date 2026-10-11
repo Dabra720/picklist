@@ -995,6 +995,66 @@ input[type='search'] {
   gap: 8px;
 }
 
+/* ---------- Reminders ---------- */
+
+.detail-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+
+.inline-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 0.9375rem;
+}
+
+.inline-check input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--accent);
+}
+
+.segmented-wrap {
+  flex-wrap: wrap;
+}
+
+.segmented-wrap button {
+  flex: 1 1 40%;
+}
+
+.sheet-actions {
+  margin-top: 12px;
+}
+
+.reminder-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.reminder-link {
+  flex: none;
+  max-width: 40%;
+  margin-right: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+}
+
+.reminder-chip {
+  color: var(--accent);
+}
+
+.notice-small {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
 /* ---------- Tags and search ---------- */
 
 .tag-chips {
@@ -1018,7 +1078,8 @@ input[type='search'] {
   margin-top: 4px;
 }
 
-.tag-field {
+.tag-field,
+.reminder-field {
   display: flex;
   flex-wrap: wrap;
   align-items: center;

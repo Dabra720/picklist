@@ -8,6 +8,7 @@ import { useAppState } from '../../core/store';
 import { MAX_NAME_LENGTH } from '../../core/types';
 import { goTasks } from './routes';
 import { TagField } from '../search/TagPicker';
+import { ReminderField } from '../reminders/ReminderField';
 import {
   addSubtask,
   deleteSubtask,
@@ -233,6 +234,11 @@ export function TaskScreen({ task }: { task: Task }) {
         <div className="field">
           <span>Tags</span>
           <TagField kind="task" id={task.id} tagIds={task.tagIds} />
+        </div>
+
+        <div className="field">
+          <span>Herinneringen</span>
+          <ReminderField target={{ kind: 'task', id: task.id }} title={task.title} />
         </div>
 
         <section className="field" aria-labelledby="task-subtasks">

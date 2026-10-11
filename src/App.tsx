@@ -4,7 +4,7 @@ import { TabBar } from './app/TabBar';
 import { ToastHost } from './core/components/ToastHost';
 import { navigate, useRoute, type Route } from './core/router';
 import { initStore, useAppState } from './core/store';
-import { moduleFor } from './modules';
+import { moduleFor, MODULES } from './modules';
 
 export function App() {
   const state = useAppState();
@@ -60,6 +60,7 @@ export function App() {
       {/* The tab bar is on the main screens; screens below them have their own back button. */}
       {route.segment === module.home && <TabBar current={module.id} />}
       <AppMenuHost />
+      {MODULES.map(({ id, Background }) => Background && <Background key={id} />)}
       <ToastHost />
     </>
   );

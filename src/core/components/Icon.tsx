@@ -22,6 +22,9 @@ const PATHS = {
   task: 'M4 5h16v14H4zM8 12l3 3 5-6',
   board: 'M4 5h4v14H4zM10 5h4v9h-4zM16 5h4v6h-4z',
   list: 'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',
+  bell: 'M6 16v-5a6 6 0 1112 0v5l2 2H4zM10 21h4',
+  repeat: 'M17 3l3 3-3 3M4 12V10a4 4 0 014-4h12M7 21l-3-3 3-3M20 12v2a4 4 0 01-4 4H4',
+  calendar: 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',
   folder: 'M3 6h6l2 2h10v11H3z',
   checklist: 'M10 6h10M10 12h10M10 18h10M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5 2.5-2.5M3.5 18l1.5 1.5 2.5-2.5',
 } as const;
