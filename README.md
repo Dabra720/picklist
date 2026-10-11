@@ -6,6 +6,11 @@ account, geen server, en na de eerste keer laden volledig offline te gebruiken.
 
 ## Wat kan de app
 
+- Startscherm (dashboard): snelle knoppen voor een notitie, taak, herinnering of paklijst, en
+  blokken met wat vandaag speelt (herinneringen en deadlines), gewoontes van vandaag, open taken,
+  actieve paklijsten en recente notities. Vink direct af vanaf het startscherm. Met het
+  schuifjes-icoon kies je welke blokken je ziet en in welke volgorde.
+
 - Meerdere paklijsten: aanmaken, hernoemen, dupliceren en (na bevestiging) verwijderen.
 - Labels per lijst (bijv. Kleding, Elektronica) met een eigen kleur en voortgang. Een label
   verwijderen laat de items staan.
@@ -48,8 +53,9 @@ account, geen server, en na de eerste keer laden volledig offline te gebruiken.
   subtaken, notities en templates, ook zonder accenten ("cafe" vindt "café"). Filter op soort,
   op één of meer tags tegelijk en op wijzigingsdatum. Tags beheer je op één plek (het label-icoon
   in Zoeken). Labels blijven iets anders: die groeperen items binnen één lijst.
-- Tabbalk onderaan de hoofdschermen met vier onderdelen naar keuze (Meer → Instellingen →
-  Tabbalk) en **Meer** voor de rest en de **Instellingen**. Op een scherm zonder tabbalk (een
+- Tabbalk onderaan de hoofdschermen met vier onderdelen naar keuze (standaard Start, Paklijsten,
+  Taken en Notities; aan te passen via Meer → Instellingen → Tabbalk) en **Meer** voor de rest
+  en de **Instellingen**. Op een scherm zonder tabbalk (een
   lijst, notitie, template of taak) ga je terug met de pijl linksboven. Tijdens het typen
   onderaan verdwijnt de tabbalk, zodat het toetsenbord ruimte heeft.
 - Back-ups als JSON (Meer → Instellingen):
@@ -176,8 +182,10 @@ installatie-icoon in de adresbalk.
 ## Projectstructuur
 
 De app bestaat uit een kern en losse modules. Een module meldt zich aan in
-`src/modules/index.ts` met zijn schermen (routes), menu-item en opstartstappen; de kern hoeft
-daarvoor niet te veranderen.
+`src/modules/index.ts` met zijn schermen (routes), menu-item, opstartstappen, back-updeel,
+eventuele dashboardblokken en achtergrondwerk; de kern hoeft daarvoor niet te veranderen.
+Routes: `#/` startscherm, `#/lijsten` en `#/lijst/<id>`, `#/templates`, `#/taken`,
+`#/notities`, `#/herinneringen`, `#/gewoontes`, `#/zoeken`.
 
 ```
 src/
@@ -196,6 +204,7 @@ src/
   app/                  De schil rond de modules: menu, tabbalk, instellingen, back-up
   modules/
     index.ts            Alle modules, in menuvolgorde
+    dashboard/          Startscherm: verzamelt de widgets die modules aanbieden
     lists/              Paklijsten: types, store, schermen, sheets
     templates/          Templates en categorieën: types, store, schermen
     tasks/              Taken en projecten: types, store, lijst, bord, detail

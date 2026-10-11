@@ -5,6 +5,15 @@ import type { Route } from './router';
 import type { LoadHook } from './store';
 import type { AppData } from './types';
 
+/** A card on the dashboard that a module contributes. */
+export interface DashboardWidget {
+  id: string;
+  title: string;
+  /** Route segment behind "Alles bekijken". */
+  more?: string;
+  Component: ComponentType;
+}
+
 /** What one module stores in a backup file and how it reads it back. */
 export interface ModuleBackup {
   /** Name of this part in the backup screens, when it differs from the module's name. */
@@ -55,6 +64,8 @@ export interface AppModule {
    * as checking for due reminders. Renders nothing visible.
    */
   Background?: ComponentType;
+  /** Cards this module shows on the dashboard. */
+  widgets?: DashboardWidget[];
   /** How this module takes part in backups. Key in the backup file = the module id. */
   backup?: ModuleBackup;
 }

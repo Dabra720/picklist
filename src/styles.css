@@ -995,6 +995,162 @@ input[type='search'] {
   gap: 8px;
 }
 
+/* ---------- Dashboard ---------- */
+
+.dashboard-title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 8px;
+}
+
+.dashboard-title h1 {
+  padding: 0;
+}
+
+.dashboard-title span {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.quick-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 76px;
+  padding: 10px 4px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.quick-action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.quick-action:active {
+  transform: scale(0.97);
+}
+
+.widgets {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .widgets {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quick-actions {
+    max-width: 560px;
+  }
+}
+
+.widget {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0 6px;
+  overflow: hidden;
+}
+
+.widget-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0 8px 0 16px;
+}
+
+.widget-head h2 {
+  font-size: 1rem;
+}
+
+.widget-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.widget .task-list > li {
+  border-top: 1px solid var(--border);
+}
+
+.widget-empty,
+.widget-more-count {
+  padding: 8px 16px 10px;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.widget-more-count {
+  border-top: 1px solid var(--border);
+  font-size: 0.8125rem;
+}
+
+.widget-list-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.widget-list-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.habit-row .day-dot {
+  flex: none;
+  width: 52px;
+  max-width: 52px;
+}
+
+.widget-order-row {
+  display: flex;
+  align-items: center;
+}
+
+.widget-order-row .check-row {
+  flex: 1;
+}
+
+.widget-order-row + .widget-order-row {
+  border-top: 1px solid var(--border);
+}
+
 /* ---------- Habits ---------- */
 
 .habit-card {

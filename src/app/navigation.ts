@@ -33,13 +33,18 @@ export function useOverlay(): Overlay {
 export const TAB_SETTING = 'nav.tabs';
 export const TAB_COUNT = 4;
 
-/** The modules in the tab bar: the stored choice, completed with the first modules not chosen. */
+/** The tab bar until the user chooses: start, packing lists, tasks and notes. */
+const DEFAULT_TABS = ['dashboard', 'lists', 'tasks', 'notes'];
+
+/** The modules in the tab bar: the stored choice, completed with the defaults, then the rest. */
 export function resolveTabs(stored: unknown): string[] {
   const ids = MODULES.map((module) => module.id);
   const chosen = Array.isArray(stored)
     ? stored.filter((id, index): id is string => ids.includes(id) && stored.indexOf(id) === index)
     : [];
-  const rest = ids.filter((id) => !chosen.includes(id));
+  const rest = [...DEFAULT_TABS, ...ids].filter(
+    (id, index, all) => ids.includes(id) && !chosen.includes(id) && all.indexOf(id) === index,
+  );
   return [...chosen, ...rest].slice(0, Math.min(TAB_COUNT, ids.length));
 }
 
