@@ -4,6 +4,7 @@ import {
   IdSet,
   isRecord,
   readArray,
+  readIdList,
   readOrder,
   readTimes,
   Skipped,
@@ -45,6 +46,7 @@ export const listsBackup: ModuleBackup = {
         sortMode: SORT_MODES.includes(record.sortMode as SortMode)
           ? (record.sortMode as SortMode)
           : 'manual',
+        tagIds: readIdList(record.tagIds),
         ...readTimes(record, now),
       };
       listCreated.set(list.id, list.createdAt);

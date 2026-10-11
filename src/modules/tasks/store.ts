@@ -44,6 +44,7 @@ export function createTask(
     projectId: fields.projectId ?? null,
     order: nextOrder(getData().tasks),
     subtasks: [],
+    tagIds: [],
     completedAt: status === 'done' ? now : null,
     createdAt: now,
     updatedAt: now,

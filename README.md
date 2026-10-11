@@ -29,13 +29,18 @@ account, geen server, en na de eerste keer laden volledig offline te gebruiken.
 - Notities: vrije tekst met een titel, voor alles wat niet in een paklijst past. Wordt tijdens
   het typen automatisch bewaard, is doorzoekbaar en een verwijderde notitie kun je terughalen
   via **Ongedaan maken**. Een nieuwe notitie die je leeg laat, verdwijnt vanzelf.
+- Tags en zoeken: geef lijsten, notities en taken één of meer tags (met een kleur). **Zoeken**
+  (vergrootglas rechtsboven, of in het menu) doorzoekt alles: lijsten en hun items, taken en
+  subtaken, notities en templates, ook zonder accenten ("cafe" vindt "café"). Filter op soort,
+  op één of meer tags tegelijk en op wijzigingsdatum. Tags beheer je op één plek (het label-icoon
+  in Zoeken). Labels blijven iets anders: die groeperen items binnen één lijst.
 - Tabbalk onderaan de hoofdschermen met vier onderdelen naar keuze (Meer → Instellingen →
   Tabbalk) en **Meer** voor de rest en de **Instellingen**. Op een scherm zonder tabbalk (een
   lijst, notitie, template of taak) ga je terug met de pijl linksboven. Tijdens het typen
   onderaan verdwijnt de tabbalk, zodat het toetsenbord ruimte heeft.
 - Back-ups als JSON (Meer → Instellingen):
   - **Exporteren**: alles, of alleen de onderdelen die je kiest (Paklijsten, Templates,
-    Taken, Notities, Instellingen).
+    Taken, Notities, Tags, Instellingen).
   - **Terugzetten**: kies per onderdeel en kies **Samenvoegen** (voegt toe wat nieuw is; bij
     iets wat al bestaat blijft de laatst gewijzigde versie staan; er wordt niets verwijderd) of
     **Vervangen** (de gekozen onderdelen worden gewist en vervangen).
@@ -134,6 +139,7 @@ installatie-icoon in de adresbalk.
 - Wijzigt het datamodel, voeg dan een stap toe aan `MIGRATIONS` in
   [src/core/migrations.ts](src/core/migrations.ts). De databaseversie volgt daar automatisch uit.
   Een stap mag stores toevoegen en velden aanvullen, maar nooit stores of gegevens verwijderen.
+  De stappen lopen strikt na elkaar, ook als een database meerdere versies overslaat.
 
   | Versie | Wijziging |
   | ------ | --------- |
@@ -142,6 +148,7 @@ installatie-icoon in de adresbalk.
   | 3 | Store `settings`; `createdAt`/`updatedAt` op elk record (labels en items krijgen de datum van hun lijst) |
   | 4 | Templates: `templates` (met labels en items erin), `templateCategories` |
   | 5 | Taken: `tasks` (met subtaken erin), `projects` |
+  | 6 | Tags: `tags`; `tagIds` (leeg) op lijsten, notities en taken |
 
 - Back-upformaat (versie 3): per module een eigen deel met een eigen versienummer, zodat een
   module zijn gegevens kan wijzigen zonder de andere te raken en een back-up ook maar een deel
@@ -176,6 +183,7 @@ src/
     lists/              Paklijsten: types, store, schermen, sheets
     templates/          Templates en categorieën: types, store, schermen
     tasks/              Taken en projecten: types, store, lijst, bord, detail
+    search/             Zoeken over alle modules, en de tags
     notes/              Notities: types, store, schermen
 scripts/
   generate-icons.mjs    Maakt de PNG-iconen zonder externe pakketten

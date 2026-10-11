@@ -25,6 +25,7 @@ export interface Task extends BaseRecord {
   order: number;
   subtasks: Subtask[];
   completedAt: number | null;
+  tagIds: string[];
 }
 
 export interface Project extends BaseRecord {

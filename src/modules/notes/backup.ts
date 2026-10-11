@@ -1,4 +1,12 @@
-import { count, IdSet, isRecord, readArray, readTimes, Skipped } from '../../core/lib/validate';
+import {
+  count,
+  IdSet,
+  isRecord,
+  readArray,
+  readIdList,
+  readTimes,
+  Skipped,
+} from '../../core/lib/validate';
 import type { ModuleBackup } from '../../core/modules';
 import { MAX_NAME_LENGTH } from '../../core/types';
 import type { Note } from './types';
@@ -24,7 +32,7 @@ export const notesBackup: ModuleBackup = {
       if (isEmptyNote(note)) return;
       if (!ids.accept(record.id))
         return skipped.add('notitie', 'notities', 'ongeldige of dubbele id');
-      notes.push({ id: record.id, ...note, ...readTimes(record, now) });
+      notes.push({ id: record.id, ...note, tagIds: readIdList(record.tagIds), ...readTimes(record, now) });
     });
     return { data: { notes }, warnings: skipped.messages() };
   },

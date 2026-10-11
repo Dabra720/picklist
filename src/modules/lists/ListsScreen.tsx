@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { SearchButton } from '../search/SearchButton';
+import { TagChips } from '../search/TagPicker';
 import { MenuButton } from '../../app/AppMenu';
 import { ActionSheet, ConfirmDialog, NameSheet } from '../../core/components/dialogs';
 import { Icon } from '../../core/components/Icon';
@@ -43,6 +45,7 @@ export function ListsScreen() {
       <header className="topbar">
         <MenuButton current="lists" />
         <h1>Paklijsten</h1>
+        <SearchButton />
       </header>
 
       <main className="content">
@@ -89,6 +92,7 @@ export function ListsScreen() {
                       {total > 0 && <span>{percent(checked, total)}%</span>}
                     </span>
                     <ProgressBar checked={checked} total={total} label={`Voortgang ${list.name}`} />
+                    <TagChips tagIds={list.tagIds} tags={data.tags} />
                   </button>
                   <button
                     type="button"

@@ -7,6 +7,8 @@ import type { AppData } from './types';
 
 /** What one module stores in a backup file and how it reads it back. */
 export interface ModuleBackup {
+  /** Name of this part in the backup screens, when it differs from the module's name. */
+  label?: string;
   /** Version of this module's part of the backup; raise it when that part changes. */
   version: number;
   /** The stores (AppData arrays) this module owns. */

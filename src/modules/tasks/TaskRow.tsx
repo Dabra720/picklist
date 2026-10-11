@@ -1,10 +1,13 @@
 import { Icon } from '../../core/components/Icon';
+import type { Tag } from '../search/types';
+import { TagChips } from '../search/TagPicker';
 import type { Project, Task } from './types';
 import { dueLabel, isOverdue } from './util';
 
 interface Props {
   task: Task;
   project?: Project;
+  tags?: Tag[];
   /** Show the project's name (when not already filtered on one project). */
   showProject: boolean;
   onToggle: () => void;
@@ -14,7 +17,15 @@ interface Props {
 }
 
 /** One task: a round checkbox, the title and a line with deadline, priority, project and subtasks. */
-export function TaskRow({ task, project, showProject, onToggle, onOpen, action }: Props) {
+export function TaskRow({
+  task,
+  project,
+  tags = [],
+  showProject,
+  onToggle,
+  onOpen,
+  action,
+}: Props) {
   const done = task.status === 'done';
   const subtasksDone = task.subtasks.filter((s) => s.done).length;
   return (
@@ -45,6 +56,7 @@ export function TaskRow({ task, project, showProject, onToggle, onOpen, action }
               {subtasksDone}/{task.subtasks.length}
             </span>
           )}
+          <TagChips tagIds={task.tagIds} tags={tags} />
           {showProject && project && (
             <span className="task-project">
               <span className="dot" style={{ background: project.color }} />
