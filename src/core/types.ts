@@ -1,5 +1,6 @@
 import type { Item, Label, PackList } from '../modules/lists/types';
 import type { Note } from '../modules/notes/types';
+import type { Project, Task } from '../modules/tasks/types';
 import type { Template, TemplateCategory } from '../modules/templates/types';
 
 /**
@@ -20,6 +21,8 @@ export interface AppData {
   notes: Note[];
   templates: Template[];
   templateCategories: TemplateCategory[];
+  tasks: Task[];
+  projects: Project[];
 }
 
 export const EMPTY_DATA: AppData = {
@@ -29,6 +32,8 @@ export const EMPTY_DATA: AppData = {
   notes: [],
   templates: [],
   templateCategories: [],
+  tasks: [],
+  projects: [],
 };
 
 export const MAX_NAME_LENGTH = 100;

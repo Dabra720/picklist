@@ -12,6 +12,8 @@ export const DATA_STORES: DataStore[] = [
   'notes',
   'templates',
   'templateCategories',
+  'tasks',
+  'projects',
 ];
 
 export type StoreName = DataStore | 'settings';
