@@ -979,10 +979,21 @@ input[type='search'] {
   margin-bottom: 16px;
 }
 
+.label-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .label-row {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* Colour choices shown under a label, lined up with its dot. */
+.label-colors {
+  padding: 0 4px 4px;
 }
 
 .label-row input,

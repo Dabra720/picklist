@@ -60,42 +60,71 @@ function LabelRow({
     else setName(label.name);
   };
 
-  const nextColor = () => {
-    const index = LABEL_COLORS.indexOf(label.color);
-    onUpdate(label.id, { color: LABEL_COLORS[(index + 1) % LABEL_COLORS.length] });
+  // Tapping the dot shows every colour at once, so one tap picks the one you want.
+  const [picking, setPicking] = useState(false);
+  const pickerId = `label-colors-${label.id}`;
+
+  const pickColor = (color: string) => {
+    if (color !== label.color) onUpdate(label.id, { color });
+    setPicking(false);
   };
 
   return (
-    <li className="label-row">
-      <button
-        type="button"
-        className="icon-btn"
-        aria-label={`Kleur van ${label.name} wijzigen`}
-        onClick={nextColor}
-      >
-        <span className="dot dot-large" style={{ background: label.color }} />
-      </button>
-      <input
-        type="text"
-        value={name}
-        maxLength={MAX_NAME_LENGTH}
-        aria-label={one}
-        {...plainInput}
-        enterKeyHint="done"
-        onChange={(event) => setName(event.target.value)}
-        onBlur={save}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') event.currentTarget.blur();
-        }}
-      />
-      <button
-        type="button"
-        className="icon-btn icon-btn-subtle"
-        aria-label={`${one} ${label.name} verwijderen`}
-        onClick={onDelete}
-      >
-        <Icon name="trash" size={20} />
-      </button>
+    <li className="label-item">
+      <div className="label-row">
+        <button
+          type="button"
+          className="icon-btn"
+          aria-label={`Kleur van ${label.name} wijzigen`}
+          aria-expanded={picking}
+          aria-controls={pickerId}
+          onClick={() => setPicking((open) => !open)}
+        >
+          <span className="dot dot-large" style={{ background: label.color }} />
+        </button>
+        <input
+          type="text"
+          value={name}
+          maxLength={MAX_NAME_LENGTH}
+          aria-label={one}
+          {...plainInput}
+          enterKeyHint="done"
+          onChange={(event) => setName(event.target.value)}
+          onBlur={save}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') event.currentTarget.blur();
+          }}
+        />
+        <button
+          type="button"
+          className="icon-btn icon-btn-subtle"
+          aria-label={`${one} ${label.name} verwijderen`}
+          onClick={onDelete}
+        >
+          <Icon name="trash" size={20} />
+        </button>
+      </div>
+      {picking && (
+        <div
+          id={pickerId}
+          className="color-row label-colors"
+          role="radiogroup"
+          aria-label={`Kleur van ${label.name}`}
+        >
+          {LABEL_COLORS.map((color) => (
+            <button
+              key={color}
+              type="button"
+              role="radio"
+              aria-checked={label.color === color}
+              aria-label={`Kleur ${color}`}
+              className={`color-swatch${label.color === color ? ' active' : ''}`}
+              style={{ background: color }}
+              onClick={() => pickColor(color)}
+            />
+          ))}
+        </div>
+      )}
     </li>
   );
 }
