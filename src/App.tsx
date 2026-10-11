@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react';
+import { AppMenuHost } from './app/AppMenu';
+import { TabBar } from './app/TabBar';
 import { ToastHost } from './core/components/ToastHost';
 import { navigate, useRoute, type Route } from './core/router';
 import { initStore, useAppState } from './core/store';
@@ -55,6 +57,9 @@ export function App() {
   return (
     <>
       {screen}
+      {/* The tab bar is on the main screens; screens below them have their own back button. */}
+      {route.segment === module.home && <TabBar current={module.id} />}
+      <AppMenuHost />
       <ToastHost />
     </>
   );
