@@ -25,6 +25,8 @@ const PATHS = {
   bell: 'M6 16v-5a6 6 0 1112 0v5l2 2H4zM10 21h4',
   repeat: 'M17 3l3 3-3 3M4 12V10a4 4 0 014-4h12M7 21l-3-3 3-3M20 12v2a4 4 0 01-4 4H4',
   calendar: 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4',
+  flame: 'M12 21a6 6 0 006-6c0-4-3-6-4-10-2 2-3 4-3 6-1-1-2-2-2-4-2 2-3 5-3 8a6 6 0 006 6z',
+  chevronRight: 'M9 5l7 7-7 7',
   folder: 'M3 6h6l2 2h10v11H3z',
   checklist: 'M10 6h10M10 12h10M10 18h10M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5 2.5-2.5M3.5 18l1.5 1.5 2.5-2.5',
 } as const;
