@@ -3,17 +3,21 @@ import { Icon } from '../../core/components/Icon';
 import { Sheet } from '../../core/components/Sheet';
 import { plainInput } from '../../core/lib/util';
 import { MAX_NAME_LENGTH } from '../../core/types';
-import { MAX_QUANTITY, type ItemLike, type LabelLike } from './types';
+import type { LabelOption } from './labelTree';
+import { MAX_QUANTITY, type ItemLike } from './types';
 
 interface Props {
   item: ItemLike;
-  labels: LabelLike[];
+  /** In tree order; sublabels are shown with the name of their label. */
+  labels: LabelOption[];
   onSave: (patch: { name: string; labelId: string | null; quantity: number }) => void;
   onDelete: () => void;
   onClose: () => void;
 }
 
 export function ItemEditSheet({ item, labels, onSave, onDelete, onClose }: Props) {
+  const parentName = (label: LabelOption) =>
+    labels.find((candidate) => candidate.id === label.parentId)?.name ?? '';
   const [name, setName] = useState(item.name);
   const [labelId, setLabelId] = useState(item.labelId);
   const [quantity, setQuantity] = useState(item.quantity);
@@ -85,10 +89,12 @@ export function ItemEditSheet({ item, labels, onSave, onDelete, onClose }: Props
                   type="button"
                   role="radio"
                   aria-checked={labelId === label.id}
-                  className={`chip${labelId === label.id ? ' chip-active' : ''}`}
+                  aria-label={label.path}
+                  className={`chip${labelId === label.id ? ' chip-active' : ''}${label.depth === 1 ? ' chip-sub' : ''}`}
                   onClick={() => setLabelId(label.id)}
                 >
                   <span className="dot" style={{ background: label.color }} />
+                  {label.depth === 1 && <span className="chip-parent">{parentName(label)} › </span>}
                   {label.name}
                 </button>
               ))}

@@ -14,6 +14,12 @@ account, geen server, en na de eerste keer laden volledig offline te gebruiken.
 - Meerdere paklijsten: aanmaken, hernoemen, dupliceren en (na bevestiging) verwijderen.
 - Labels per lijst (bijv. Kleding, Elektronica) met een eigen kleur en voortgang. Een label
   verwijderen laat de items staan.
+- Sublabels onder een label (één niveau diep, bijv. Kleding › Warm en Kleding › Zomer), ook in
+  templates. Maak ze met de plusknop naast een label in Labels beheren, of verplaats een bestaand
+  label eronder via de kleurstip. Het label toont de voortgang inclusief zijn sublabels; filteren op
+  een label toont ook zijn sublabels, met een extra filterrij per sublabel. Een sublabel
+  verwijderen zet zijn items onder het label; een label verwijderen maakt zijn sublabels gewone
+  labels.
 - Items toevoegen, bewerken, verwijderen, naar een ander label verplaatsen, zoeken, sorteren en
   met de greep rechts handmatig verslepen (of met pijl omhoog/omlaag op het toetsenbord).
 - Een aantal per item: typ "7x sokken" bij het toevoegen, of pas het aantal aan via het
@@ -171,6 +177,7 @@ installatie-icoon in de adresbalk.
   | 6 | Tags: `tags`; `tagIds` (leeg) op lijsten, notities en taken |
   | 7 | Herinneringen: `reminders` |
   | 8 | Gewoontes: `habits`, `habitChecks` (één record per gewoonte per dag) |
+  | 9 | Sublabels: `parentId` (null) op labels en op de labels in templates |
 
 - Back-upformaat (versie 3): per module een eigen deel met een eigen versienummer, zodat een
   module zijn gegevens kan wijzigen zonder de andere te raken en een back-up ook maar een deel

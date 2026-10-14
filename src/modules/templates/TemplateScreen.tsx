@@ -8,6 +8,7 @@ import { AddItemBar, NO_LABEL } from '../lists/AddItemBar';
 import { ItemEditSheet } from '../lists/ItemEditSheet';
 import { ItemList } from '../lists/ItemList';
 import { LabelSheet, type LabelActions } from '../lists/LabelSheet';
+import { groupItems, labelOptions } from '../lists/labelTree';
 import { goTemplates } from './routes';
 import {
   addTemplateItem,
@@ -27,7 +28,12 @@ type Dialog = { kind: 'menu' | 'labels' | 'newList' } | { kind: 'item'; item: Te
 interface Group {
   key: string;
   label: TemplateLabel | null;
+  depth: 0 | 1;
+  hasChildren: boolean;
+  /** Items with exactly this label. */
   items: TemplateItem[];
+  /** Including the items of its sublabels. */
+  total: number;
 }
 
 /** Edit a template: the same groups, labels and add bar as a list, but without check marks. */
@@ -40,19 +46,22 @@ export function TemplateScreen({ template }: { template: Template }) {
   const labels = useMemo(() => [...template.labels].sort(byOrder), [template.labels]);
   const category = data.templateCategories.find((c) => c.id === template.categoryId);
 
-  const groups = useMemo<Group[]>(() => {
-    const known = new Set(labels.map((label) => label.id));
-    const sorted = [...template.items].sort(byOrder);
-    return [...labels.map((label) => ({ key: label.id, label })), { key: NO_LABEL, label: null }]
-      .map((group) => ({
-        ...group,
-        items: sorted.filter(
-          (item) =>
-            (item.labelId && known.has(item.labelId) ? item.labelId : NO_LABEL) === group.key,
-        ),
-      }))
-      .filter((group) => group.label !== null || group.items.length > 0);
-  }, [labels, template.items]);
+  const options = useMemo(() => labelOptions(labels), [labels]);
+
+  const groups = useMemo<Group[]>(
+    () =>
+      groupItems(labels, [...template.items].sort(byOrder))
+        .map((group) => ({
+          key: group.key,
+          label: group.label,
+          depth: group.depth,
+          hasChildren: group.hasChildren,
+          items: group.own,
+          total: group.all.length,
+        }))
+        .filter((group) => group.label !== null || group.items.length > 0),
+    [labels, template.items],
+  );
 
   const itemCounts = useMemo(() => {
     const counts = new Map<string, number>();
@@ -64,7 +73,7 @@ export function TemplateScreen({ template }: { template: Template }) {
   }, [template.items]);
 
   const labelActions: LabelActions = {
-    create: (name) => addTemplateLabel(template.id, name),
+    create: (name, parentId) => addTemplateLabel(template.id, name, parentId ?? null),
     update: (id, patch) => updateTemplateLabel(template.id, id, patch),
     remove: (id) => deleteTemplateLabel(template.id, id),
   };
@@ -142,7 +151,7 @@ export function TemplateScreen({ template }: { template: Template }) {
           </div>
         ) : (
           groups.map((group) => (
-            <section key={group.key} className="group">
+            <section key={group.key} className={`group${group.depth === 1 ? ' group-sub' : ''}`}>
               {labels.length > 0 && (
                 <div className="group-head">
                   <h2>
@@ -151,11 +160,16 @@ export function TemplateScreen({ template }: { template: Template }) {
                     )}
                     {group.label?.name ?? 'Geen label'}
                   </h2>
-                  <span className="group-count">{group.items.length}</span>
+                  <span className="group-count">{group.total}</span>
                 </div>
               )}
               {group.items.length === 0 ? (
-                <p className="group-empty">Nog geen items met dit label.</p>
+                // A label with sublabels needs no items of its own.
+                !group.hasChildren && (
+                  <p className="group-empty">
+                    {group.depth === 1 ? 'Nog geen items met dit sublabel.' : 'Nog geen items met dit label.'}
+                  </p>
+                )
               ) : (
                 <ItemList
                   items={group.items}
@@ -170,7 +184,7 @@ export function TemplateScreen({ template }: { template: Template }) {
       </main>
 
       <AddItemBar
-        labels={labels}
+        labels={options}
         labelId={newLabelId}
         onLabelChange={setNewLabelId}
         onAdd={(name, quantity, labelId) => addTemplateItem(template.id, name, labelId, quantity)}
@@ -196,16 +210,17 @@ export function TemplateScreen({ template }: { template: Template }) {
       )}
       {dialog?.kind === 'labels' && (
         <LabelSheet
-          labels={labels}
+          labels={options}
           itemCounts={itemCounts}
           actions={labelActions}
+          nested
           onClose={close}
         />
       )}
       {dialog?.kind === 'item' && (
         <ItemEditSheet
           item={dialog.item}
-          labels={labels}
+          labels={options}
           onClose={close}
           onDelete={() => removeItem(dialog.item)}
           onSave={(patch) => {

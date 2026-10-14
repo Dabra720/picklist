@@ -12,6 +12,7 @@ import {
 import type { ModuleBackup } from '../../core/modules';
 import type { AppData } from '../../core/types';
 import { LABEL_COLORS } from '../lists/types';
+import { cleanParents } from '../lists/labelTree';
 import { cleanQuantity } from '../lists/util';
 import type { Template, TemplateCategory, TemplateItem, TemplateLabel } from './types';
 
@@ -25,6 +26,7 @@ function readLabels(value: unknown): TemplateLabel[] {
     if (!name || !ids.accept(record.id)) return;
     labels.push({
       id: record.id,
+      parentId: typeof record.parentId === 'string' ? record.parentId : null,
       name,
       color:
         typeof record.color === 'string' && /^#[0-9a-f]{6}$/i.test(record.color)
@@ -33,7 +35,7 @@ function readLabels(value: unknown): TemplateLabel[] {
       order: readOrder(record, index),
     });
   });
-  return labels;
+  return cleanParents(labels);
 }
 
 function readItems(value: unknown, labelIds: Set<string>): TemplateItem[] {
@@ -57,9 +59,12 @@ function readItems(value: unknown, labelIds: Set<string>): TemplateItem[] {
   return items;
 }
 
-/** Templates and their categories. Version 1 = the records as stored in database version 4. */
+/**
+ * Templates and their categories. Version 1 = the records as stored in database version 4;
+ * version 2 adds parentId to the labels inside a template (sublabels, database version 9).
+ */
 export const templatesBackup: ModuleBackup = {
-  version: 1,
+  version: 2,
   stores: ['templates', 'templateCategories'],
 
   parse(section) {

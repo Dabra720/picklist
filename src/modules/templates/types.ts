@@ -7,6 +7,8 @@ import type { BaseRecord } from '../../core/types';
  */
 export interface TemplateLabel {
   id: string;
+  /** The top-level label this is a sublabel of; null for a top-level label. */
+  parentId: string | null;
   name: string;
   color: string;
   order: number;

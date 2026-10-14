@@ -30,6 +30,7 @@ import { ItemEditSheet } from './ItemEditSheet';
 import { ItemList } from './ItemList';
 import { LabelSheet, type LabelActions } from './LabelSheet';
 import { AddItemBar, NO_LABEL } from './AddItemBar';
+import { groupItems, labelOptions } from './labelTree';
 import { TagField } from '../search/TagPicker';
 import { ReminderField } from '../reminders/ReminderField';
 import { openTemplate } from '../templates/routes';
@@ -52,8 +53,12 @@ type Dialog =
 interface Group {
   key: string;
   label: Label | null;
+  depth: 0 | 1;
+  hasChildren: boolean;
+  /** Counts include the items of its sublabels. */
   total: number;
   checked: number;
+  /** Items with exactly this label that match the search. */
   visible: Item[];
 }
 
@@ -74,34 +79,47 @@ export function ListScreen({ list }: { list: PackList }) {
     [data.items, list.id],
   );
 
+  const options = useMemo(() => labelOptions(labels), [labels]);
+  const topLabels = options.filter((label) => label.depth === 0);
+
   const labelIds = new Set(labels.map((label) => label.id));
   // Fall back gracefully when the selected label has been deleted in the meantime.
   const activeFilter = filter === 'all' || filter === NO_LABEL || labelIds.has(filter) ? filter : 'all';
+  const filterLabel = options.find((label) => label.id === activeFilter);
+  // The top-level label being looked at: its sublabels are offered as a second row of filters.
+  const filterTop = filterLabel ? (filterLabel.parentId ?? filterLabel.id) : null;
+  const subFilters = filterTop ? options.filter((label) => label.parentId === filterTop) : [];
   const search = query.trim().toLocaleLowerCase('nl');
 
   const groups = useMemo<Group[]>(() => {
-    const known = new Set(labels.map((label) => label.id));
-    const sorted = sortItems(items, list.sortMode);
-    const definitions: { key: string; label: Label | null }[] = [
-      ...labels.map((label) => ({ key: label.id, label })),
-      { key: NO_LABEL, label: null },
-    ];
-    return definitions
-      .filter((group) => activeFilter === 'all' || activeFilter === group.key)
+    const matches = (item: Item) => item.name.toLocaleLowerCase('nl').includes(search);
+    return groupItems(labels, sortItems(items, list.sortMode))
+      .filter(
+        (group) =>
+          activeFilter === 'all' ||
+          activeFilter === group.key ||
+          // A top-level filter also shows its sublabels.
+          (group.depth === 1 && activeFilter === group.topKey),
+      )
       .map((group) => {
-        const own = sorted.filter(
-          (item) => (item.labelId && known.has(item.labelId) ? item.labelId : NO_LABEL) === group.key,
-        );
+        const visible = search ? group.own.filter(matches) : group.own;
         return {
-          ...group,
-          total: own.length,
-          checked: own.filter((item) => item.checked).length,
-          visible: search
-            ? own.filter((item) => item.name.toLocaleLowerCase('nl').includes(search))
-            : own,
+          key: group.key,
+          label: group.label,
+          depth: group.depth,
+          hasChildren: group.hasChildren,
+          total: group.all.length,
+          checked: group.all.filter((item) => item.checked).length,
+          visible,
+          searchHits: search ? group.all.filter(matches).length : 0,
         };
       })
-      .filter((group) => (search ? group.visible.length > 0 : group.label !== null || group.total > 0));
+      .filter((group) =>
+        search
+          ? // While searching, a label stays as a heading when one of its sublabels has a hit.
+            group.searchHits > 0
+          : group.label !== null || group.total > 0,
+      );
   }, [items, labels, list.sortMode, activeFilter, search]);
 
   const total = items.length;
@@ -123,7 +141,7 @@ export function ListScreen({ list }: { list: PackList }) {
   };
 
   const labelActions: LabelActions = {
-    create: (name) => createLabel(list.id, name),
+    create: (name, parentId) => createLabel(list.id, name, parentId ?? null),
     update: updateLabel,
     remove: deleteLabel,
   };
@@ -231,12 +249,12 @@ export function ListScreen({ list }: { list: PackList }) {
               >
                 Alles
               </button>
-              {labels.map((label) => (
+              {topLabels.map((label) => (
                 <button
                   key={label.id}
                   type="button"
-                  aria-pressed={activeFilter === label.id}
-                  className={`chip${activeFilter === label.id ? ' chip-active' : ''}`}
+                  aria-pressed={filterTop === label.id}
+                  className={`chip${filterTop === label.id ? ' chip-active' : ''}`}
                   onClick={() => selectFilter(label.id)}
                 >
                   <span className="dot" style={{ background: label.color }} />
@@ -259,6 +277,31 @@ export function ListScreen({ list }: { list: PackList }) {
           </button>
         </div>
 
+        {filterTop && subFilters.length > 0 && (
+          <div className="chips chips-sub" role="group" aria-label="Filter op sublabel">
+            <button
+              type="button"
+              aria-pressed={activeFilter === filterTop}
+              className={`chip${activeFilter === filterTop ? ' chip-active' : ''}`}
+              onClick={() => selectFilter(filterTop)}
+            >
+              Alles
+            </button>
+            {subFilters.map((label) => (
+              <button
+                key={label.id}
+                type="button"
+                aria-pressed={activeFilter === label.id}
+                className={`chip${activeFilter === label.id ? ' chip-active' : ''}`}
+                onClick={() => selectFilter(label.id)}
+              >
+                <span className="dot" style={{ background: label.color }} />
+                {label.name}
+              </button>
+            ))}
+          </div>
+        )}
+
         {total === 0 ? (
           <div className="empty empty-compact">
             <h2>Deze lijst is nog leeg</h2>
@@ -273,7 +316,7 @@ export function ListScreen({ list }: { list: PackList }) {
           </div>
         ) : (
           groups.map((group) => (
-            <section key={group.key} className="group">
+            <section key={group.key} className={`group${group.depth === 1 ? ' group-sub' : ''}`}>
               {labels.length > 0 && (
                 <div className="group-head">
                   <h2>
@@ -292,7 +335,13 @@ export function ListScreen({ list }: { list: PackList }) {
                 </div>
               )}
               {group.visible.length === 0 ? (
-                <p className="group-empty">Nog geen items met dit label.</p>
+                // A label with sublabels needs no items of its own.
+                !group.hasChildren &&
+                !search && (
+                  <p className="group-empty">
+                    {group.depth === 1 ? 'Nog geen items met dit sublabel.' : 'Nog geen items met dit label.'}
+                  </p>
+                )
               ) : (
                 <ItemList
                   items={group.visible}
@@ -308,7 +357,7 @@ export function ListScreen({ list }: { list: PackList }) {
       </main>
 
       <AddItemBar
-        labels={labels}
+        labels={options}
         labelId={newLabelId}
         onLabelChange={setNewLabelId}
         onAdd={(name, quantity, labelId) => addItem(list.id, name, labelId, quantity) !== null}
@@ -404,13 +453,19 @@ export function ListScreen({ list }: { list: PackList }) {
       )}
 
       {dialog?.kind === 'labels' && (
-        <LabelSheet labels={labels} itemCounts={itemCounts} actions={labelActions} onClose={close} />
+        <LabelSheet
+          labels={options}
+          itemCounts={itemCounts}
+          actions={labelActions}
+          nested
+          onClose={close}
+        />
       )}
 
       {dialog?.kind === 'item' && (
         <ItemEditSheet
           item={dialog.item}
-          labels={labels}
+          labels={options}
           onClose={close}
           onDelete={() => removeItem(dialog.item)}
           onSave={(patch) => {

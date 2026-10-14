@@ -581,6 +581,17 @@ input[type='search'] {
   color: var(--text-muted);
 }
 
+/* Filters for the sublabels of the selected label, right under the label filters. */
+.chips-sub {
+  margin-top: -6px;
+}
+
+.chip-parent {
+  margin-right: -4px;
+  font-weight: 450;
+  color: var(--text-muted);
+}
+
 .dot {
   flex: none;
   width: 10px;
@@ -634,6 +645,19 @@ input[type='search'] {
 .group-empty {
   padding: 4px;
   font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+
+/* A sublabel's group sits indented under its label, with a lighter heading and a guide line. */
+.group-sub {
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+}
+
+.group-sub .group-head h2 {
+  font-size: 0.875rem;
+  font-weight: 600;
   color: var(--text-muted);
 }
 
@@ -994,6 +1018,32 @@ input[type='search'] {
 /* Colour choices shown under a label, lined up with its dot. */
 .label-colors {
   padding: 0 4px 4px;
+}
+
+/* Sublabels are indented under their label. */
+.label-item-child {
+  margin-left: 20px;
+  padding-left: 8px;
+  border-left: 2px solid var(--border);
+}
+
+.label-parent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.label-parent .select {
+  flex: 1;
+  min-width: 0;
+}
+
+.label-child-form {
+  margin-left: 28px;
 }
 
 .label-row input,

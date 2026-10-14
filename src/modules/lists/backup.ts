@@ -19,11 +19,26 @@ import {
   type PackList,
   type SortMode,
 } from './types';
+import { cleanParents } from './labelTree';
 import { cleanQuantity } from './util';
 
-/** Lists, labels and items. Version 1 = the records as stored in database version 3. */
+/** Sublabels whose parent is missing, in another list or itself a sublabel become top-level. */
+function cleanLabelParents(labels: Label[]): Label[] {
+  const byList = new Map<string, Label[]>();
+  for (const label of labels) byList.set(label.listId, [...(byList.get(label.listId) ?? []), label]);
+  const cleaned = new Map<string, Label>();
+  for (const group of byList.values()) {
+    for (const label of cleanParents(group)) cleaned.set(label.id, label);
+  }
+  return labels.map((label) => cleaned.get(label.id) ?? label);
+}
+
+/**
+ * Lists, labels and items. Version 1 = the records as stored in database version 3; version 2
+ * adds parentId to labels (sublabels, database version 9). Version 1 labels are all top-level.
+ */
 export const listsBackup: ModuleBackup = {
-  version: 1,
+  version: 2,
   stores: ['lists', 'labels', 'items'],
 
   parse(section) {
@@ -73,6 +88,7 @@ export const listsBackup: ModuleBackup = {
       labels.push({
         id: record.id,
         listId: record.listId,
+        parentId: typeof record.parentId === 'string' ? record.parentId : null,
         name,
         color:
           typeof record.color === 'string' && /^#[0-9a-f]{6}$/i.test(record.color)
@@ -108,12 +124,15 @@ export const listsBackup: ModuleBackup = {
       });
     });
 
-    return { data: { lists, labels, items }, warnings: skipped.messages() };
+    return {
+      data: { lists, labels: cleanLabelParents(labels), items },
+      warnings: skipped.messages(),
+    };
   },
 
   repair(data: AppData): AppData {
     const listIds = new Set(data.lists.map((list) => list.id));
-    const labels = data.labels.filter((label) => listIds.has(label.listId));
+    const labels = cleanLabelParents(data.labels.filter((label) => listIds.has(label.listId)));
     const labelList = new Map(labels.map((label) => [label.id, label.listId]));
     const items = data.items
       .filter((item) => listIds.has(item.listId))

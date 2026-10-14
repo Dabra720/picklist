@@ -12,8 +12,11 @@ export interface PackList extends BaseRecord {
 
 export interface Label extends BaseRecord {
   listId: string;
+  /** The top-level label this is a sublabel of; null for a top-level label. */
+  parentId: string | null;
   name: string;
   color: string;
+  /** Order among the labels with the same parent. */
   order: number;
 }
 
@@ -28,7 +31,7 @@ export interface Item extends BaseRecord {
 }
 
 /** The fields of a label that screens shared by lists and templates use. */
-export type LabelLike = Pick<Label, 'id' | 'name' | 'color'>;
+export type LabelLike = Pick<Label, 'id' | 'name' | 'color'> & { parentId?: string | null };
 
 /** The fields of an item that screens shared by lists and templates use. */
 export interface ItemLike {
