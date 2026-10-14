@@ -2,6 +2,7 @@ import { byOrder, cleanName, nextOrder, uid } from '../../core/lib/util';
 import { commit, getData } from '../../core/store';
 import type { Item, Label, PackList } from '../lists/types';
 import { LABEL_COLORS } from '../lists/types';
+import { labelTree } from '../lists/labelTree';
 import { cleanQuantity } from '../lists/util';
 import type { Template, TemplateCategory, TemplateItem, TemplateLabel } from './types';
 
@@ -90,15 +91,26 @@ export function restoreTemplate(template: Template) {
 
 // ---------- Labels and items inside a template ----------
 
-export function addTemplateLabel(templateId: string, name: string): string | null {
+/** Adds a label, or a sublabel when `parentId` is a top-level label of the template. */
+export function addTemplateLabel(
+  templateId: string,
+  name: string,
+  parentId: string | null = null,
+): string | null {
   const clean = cleanName(name);
   const template = getData().templates.find((t) => t.id === templateId);
   if (!clean || !template) return null;
+  const parent = parentId
+    ? template.labels.find((label) => label.id === parentId && !label.parentId)
+    : undefined;
   const label: TemplateLabel = {
     id: uid(),
+    parentId: parent?.id ?? null,
     name: clean,
-    color: LABEL_COLORS[template.labels.length % LABEL_COLORS.length],
-    order: nextOrder(template.labels),
+    color: parent?.color ?? LABEL_COLORS[template.labels.length % LABEL_COLORS.length],
+    order: nextOrder(
+      template.labels.filter((l) => (l.parentId ?? null) === (parent?.id ?? null)),
+    ),
   };
   changeTemplate(templateId, (t) => ({ ...t, labels: [...t.labels, label] }));
   return label.id;
@@ -107,27 +119,54 @@ export function addTemplateLabel(templateId: string, name: string): string | nul
 export function updateTemplateLabel(
   templateId: string,
   labelId: string,
-  patch: { name?: string; color?: string },
+  patch: { name?: string; color?: string; parentId?: string | null },
 ) {
   const name = patch.name !== undefined ? cleanName(patch.name) : undefined;
   if (name === '') return;
-  changeTemplate(templateId, (t) => ({
-    ...t,
-    labels: t.labels.map((label) =>
-      label.id === labelId
-        ? { ...label, ...(name ? { name } : {}), ...(patch.color ? { color: patch.color } : {}) }
-        : label,
-    ),
-  }));
+  changeTemplate(templateId, (t) => {
+    const current = t.labels.find((label) => label.id === labelId);
+    if (!current) return null;
+    const next: TemplateLabel = {
+      ...current,
+      ...(name ? { name } : {}),
+      ...(patch.color ? { color: patch.color } : {}),
+    };
+    const parentId = patch.parentId;
+    if (parentId !== undefined && parentId !== (current.parentId ?? null)) {
+      if (parentId !== null) {
+        const parent = t.labels.find((label) => label.id === parentId);
+        const hasChildren = t.labels.some((label) => label.parentId === labelId);
+        if (!parent || parent.parentId || parent.id === labelId || hasChildren) return null;
+      }
+      next.parentId = parentId;
+      next.order = nextOrder(t.labels.filter((label) => (label.parentId ?? null) === parentId));
+    }
+    return { ...t, labels: t.labels.map((label) => (label.id === labelId ? next : label)) };
+  });
 }
 
-/** Removes a label; its items stay and lose the label. */
+/**
+ * Removes a label; its items stay: those of a sublabel move to its label, those of a top-level
+ * label lose the label. Sublabels of a removed label become top-level labels.
+ */
 export function deleteTemplateLabel(templateId: string, labelId: string) {
-  changeTemplate(templateId, (t) => ({
-    ...t,
-    labels: t.labels.filter((label) => label.id !== labelId),
-    items: t.items.map((item) => (item.labelId === labelId ? { ...item, labelId: null } : item)),
-  }));
+  changeTemplate(templateId, (t) => {
+    const removed = t.labels.find((label) => label.id === labelId);
+    if (!removed) return null;
+    const fallback = removed.parentId ?? null;
+    let order = nextOrder(t.labels.filter((label) => !label.parentId));
+    return {
+      ...t,
+      labels: t.labels
+        .filter((label) => label.id !== labelId)
+        .map((label) =>
+          label.parentId === labelId ? { ...label, parentId: null, order: order++ } : label,
+        ),
+      items: t.items.map((item) =>
+        item.labelId === labelId ? { ...item, labelId: fallback } : item,
+      ),
+    };
+  });
 }
 
 export function addTemplateItem(
@@ -226,15 +265,21 @@ export function saveListAsTemplate(
   const data = getData();
   const clean = cleanName(name);
   if (!clean || !data.lists.some((list) => list.id === listId)) return null;
+  // Labels are copied in tree order, so each parent gets its new id before its sublabels.
   const labelIds = new Map<string, string>();
-  const labels: TemplateLabel[] = data.labels
-    .filter((label) => label.listId === listId)
-    .sort(byOrder)
-    .map((label, index) => {
+  const labels: TemplateLabel[] = labelTree(data.labels.filter((label) => label.listId === listId)).map(
+    ({ label, parent }, index) => {
       const id = uid();
       labelIds.set(label.id, id);
-      return { id, name: label.name, color: label.color, order: index };
-    });
+      return {
+        id,
+        parentId: (parent && labelIds.get(parent.id)) || null,
+        name: label.name,
+        color: label.color,
+        order: index,
+      };
+    },
+  );
   const items: TemplateItem[] = data.items
     .filter((item) => item.listId === listId)
     .sort(byOrder)
@@ -277,12 +322,13 @@ export function createListFromTemplate(templateId: string, name: string): string
     updatedAt: now,
   };
   const labelIds = new Map<string, string>();
-  const labels: Label[] = [...template.labels].sort(byOrder).map((label, index) => {
+  const labels: Label[] = labelTree(template.labels).map(({ label, parent }, index) => {
     const id = uid();
     labelIds.set(label.id, id);
     return {
       id,
       listId: list.id,
+      parentId: (parent && labelIds.get(parent.id)) || null,
       name: label.name,
       color: label.color,
       order: index,

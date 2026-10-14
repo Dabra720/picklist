@@ -4,12 +4,14 @@ import { Icon } from '../../core/components/Icon';
 import { Sheet } from '../../core/components/Sheet';
 import { plainInput } from '../../core/lib/util';
 import { MAX_NAME_LENGTH } from '../../core/types';
+import { labelTree, type TreeEntry } from './labelTree';
 import { LABEL_COLORS, type LabelLike } from './types';
 
 /** What the sheet does with labels; a list and a template each store them in their own way. */
 export interface LabelActions {
-  create: (name: string) => string | null;
-  update: (id: string, patch: { name?: string; color?: string }) => void;
+  /** `parentId` is only passed when the sheet offers sublabels. */
+  create: (name: string, parentId?: string | null) => string | null;
+  update: (id: string, patch: { name?: string; color?: string; parentId?: string | null }) => void;
   remove: (id: string) => void;
 }
 
@@ -38,20 +40,33 @@ interface Props {
   itemCounts: Map<string, number>;
   actions: LabelActions;
   texts?: LabelTexts;
+  /** Offers sublabels (one level deep); used by lists and templates. */
+  nested?: boolean;
   onClose: () => void;
 }
 
+/** Labels with an order, as the tree helpers need; the sheet gets them already sorted. */
+type Sorted = LabelLike & { order: number };
+
 function LabelRow({
-  label,
+  entry,
   one,
+  nested,
+  parents,
   onUpdate,
   onDelete,
+  onAddChild,
 }: {
-  label: LabelLike;
+  entry: TreeEntry<Sorted>;
   one: string;
+  nested: boolean;
+  /** Top-level labels this label could be moved under. */
+  parents: Sorted[];
   onUpdate: LabelActions['update'];
   onDelete: () => void;
+  onAddChild: (name: string) => boolean;
 }) {
+  const { label } = entry;
   const [name, setName] = useState(label.name);
 
   // Saved when leaving the field; an emptied name falls back to the stored one.
@@ -69,13 +84,26 @@ function LabelRow({
     setPicking(false);
   };
 
+  const [adding, setAdding] = useState(false);
+  const [childName, setChildName] = useState('');
+  const addChild = (event: FormEvent) => {
+    event.preventDefault();
+    if (onAddChild(childName)) setChildName('');
+  };
+
+  // A label with sublabels stays top-level: labels go one level deep.
+  const canMove = nested && entry.children.length === 0 && parents.length > 0;
+  const currentParent = entry.parent?.id ?? '';
+
   return (
-    <li className="label-item">
+    <li className={`label-item${entry.depth === 1 ? ' label-item-child' : ''}`}>
       <div className="label-row">
         <button
           type="button"
           className="icon-btn"
-          aria-label={`Kleur van ${label.name} wijzigen`}
+          aria-label={
+            canMove ? `Kleur en plaats van ${label.name} wijzigen` : `Kleur van ${label.name} wijzigen`
+          }
           aria-expanded={picking}
           aria-controls={pickerId}
           onClick={() => setPicking((open) => !open)}
@@ -95,6 +123,17 @@ function LabelRow({
             if (event.key === 'Enter') event.currentTarget.blur();
           }}
         />
+        {nested && entry.depth === 0 && (
+          <button
+            type="button"
+            className="icon-btn icon-btn-subtle"
+            aria-label={`Sublabel toevoegen aan ${label.name}`}
+            aria-expanded={adding}
+            onClick={() => setAdding((open) => !open)}
+          >
+            <Icon name="plus" size={20} />
+          </button>
+        )}
         <button
           type="button"
           className="icon-btn icon-btn-subtle"
@@ -104,6 +143,26 @@ function LabelRow({
           <Icon name="trash" size={20} />
         </button>
       </div>
+      {picking && canMove && (
+        <label className="label-parent">
+          <span>Valt onder</span>
+          <select
+            className="select"
+            value={currentParent}
+            onChange={(event) => {
+              onUpdate(label.id, { parentId: event.target.value || null });
+              setPicking(false);
+            }}
+          >
+            <option value="">Geen (hoofdlabel)</option>
+            {parents.map((parent) => (
+              <option key={parent.id} value={parent.id}>
+                {parent.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       {picking && (
         <div
           id={pickerId}
@@ -125,37 +184,93 @@ function LabelRow({
           ))}
         </div>
       )}
+      {adding && (
+        <form className="inline-form label-child-form" onSubmit={addChild}>
+          <input
+            type="text"
+            value={childName}
+            placeholder={`Sublabel van ${label.name}`}
+            aria-label={`Nieuw sublabel van ${label.name}`}
+            maxLength={MAX_NAME_LENGTH}
+            autoFocus
+            {...plainInput}
+            enterKeyHint="done"
+            onChange={(event) => setChildName(event.target.value)}
+          />
+          <button type="submit" className="btn btn-primary" disabled={!childName.trim()}>
+            Toevoegen
+          </button>
+        </form>
+      )}
     </li>
   );
 }
 
-export function LabelSheet({ labels, itemCounts, actions, texts = LABEL_TEXTS, onClose }: Props) {
+/** What happens to the items and sublabels of a label that is removed (lists and templates). */
+function nestedDeleteMessage(entry: TreeEntry<Sorted>, items: number): string {
+  const { label, parent, children } = entry;
+  if (parent) {
+    return `De items met het sublabel "${label.name}" blijven bewaard en komen onder "${parent.name}".`;
+  }
+  const parts: string[] = [];
+  if (items > 0) parts.push(`De items met het label "${label.name}" blijven bewaard, maar hebben daarna geen label meer.`);
+  if (children.length > 0) {
+    parts.push(
+      children.length === 1
+        ? `Het sublabel "${children[0].name}" wordt een gewoon label.`
+        : `De ${children.length} sublabels worden gewone labels.`,
+    );
+  }
+  return parts.join(' ');
+}
+
+export function LabelSheet({
+  labels,
+  itemCounts,
+  actions,
+  texts = LABEL_TEXTS,
+  nested = false,
+  onClose,
+}: Props) {
   const [newName, setNewName] = useState('');
-  const [deleting, setDeleting] = useState<LabelLike | null>(null);
+  const [deleting, setDeleting] = useState<TreeEntry<Sorted> | null>(null);
+
+  // The sheet gets labels in display order; without nesting they are all top-level.
+  const entries = labelTree<Sorted>(
+    labels.map((label, order) => ({ ...label, order, parentId: nested ? label.parentId : null })),
+  );
+  const topLevel = entries.filter((entry) => entry.depth === 0).map((entry) => entry.label);
 
   const add = (event: FormEvent) => {
     event.preventDefault();
     if (actions.create(newName)) setNewName('');
   };
 
-  const remove = (label: LabelLike) => {
-    if ((itemCounts.get(label.id) ?? 0) === 0) actions.remove(label.id);
-    else setDeleting(label);
+  const remove = (entry: TreeEntry<Sorted>) => {
+    if ((itemCounts.get(entry.label.id) ?? 0) === 0 && entry.children.length === 0) {
+      actions.remove(entry.label.id);
+    } else setDeleting(entry);
   };
 
   return (
     <Sheet title={texts.title} onClose={onClose}>
       {labels.length === 0 ? (
-        <p className="sheet-text">{texts.intro}</p>
+        <p className="sheet-text">
+          {texts.intro}
+          {nested && ' Met de plusknop naast een label maak je er sublabels onder.'}
+        </p>
       ) : (
         <ul className="label-rows">
-          {labels.map((label) => (
+          {entries.map((entry) => (
             <LabelRow
-              key={label.id}
-              label={label}
-              one={texts.one}
+              key={entry.label.id}
+              entry={entry}
+              one={entry.depth === 1 ? 'Sublabel' : texts.one}
+              nested={nested}
+              parents={topLevel.filter((label) => label.id !== entry.label.id)}
               onUpdate={actions.update}
-              onDelete={() => remove(label)}
+              onDelete={() => remove(entry)}
+              onAddChild={(name) => actions.create(name, entry.label.id) !== null}
             />
           ))}
         </ul>
@@ -179,13 +294,17 @@ export function LabelSheet({ labels, itemCounts, actions, texts = LABEL_TEXTS, o
 
       {deleting && (
         <ConfirmDialog
-          title={texts.deleteTitle}
-          message={texts.deleteMessage(deleting.name)}
+          title={deleting.depth === 1 ? 'Sublabel verwijderen?' : texts.deleteTitle}
+          message={
+            nested
+              ? nestedDeleteMessage(deleting, itemCounts.get(deleting.label.id) ?? 0)
+              : texts.deleteMessage(deleting.label.name)
+          }
           confirmLabel="Verwijderen"
           danger
           onCancel={() => setDeleting(null)}
           onConfirm={() => {
-            actions.remove(deleting.id);
+            actions.remove(deleting.label.id);
             setDeleting(null);
           }}
         />

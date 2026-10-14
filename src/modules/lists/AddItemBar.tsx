@@ -2,13 +2,14 @@ import { forwardRef, useImperativeHandle, useRef, useState, type FormEvent } fro
 import { Icon } from '../../core/components/Icon';
 import { plainInput } from '../../core/lib/util';
 import { MAX_NAME_LENGTH } from '../../core/types';
-import type { LabelLike } from './types';
+import type { LabelOption } from './labelTree';
 import { parseQuantity } from './util';
 
 export const NO_LABEL = 'none';
 
 interface Props {
-  labels: LabelLike[];
+  /** In tree order; sublabels are shown with the name of their label. */
+  labels: LabelOption[];
   /** NO_LABEL or a label id: the label new items get. */
   labelId: string;
   onLabelChange: (labelId: string) => void;
@@ -49,7 +50,7 @@ export const AddItemBar = forwardRef<{ focus: () => void }, Props>(function AddI
           <option value={NO_LABEL}>Geen label</option>
           {labels.map((label) => (
             <option key={label.id} value={label.id}>
-              {label.name}
+              {label.path}
             </option>
           ))}
         </select>

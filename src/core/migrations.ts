@@ -172,6 +172,38 @@ export const MIGRATIONS: Migration[] = [
       done();
     },
   },
+  {
+    version: 9,
+    description: 'Sublabels: parentId on labels and on the labels inside templates',
+    run: (_db, tx, done) => {
+      const withParent = (label: Row): Row =>
+        'parentId' in label ? label : { ...label, parentId: null };
+      inSequence(
+        [
+          (next) =>
+            updateRecords(
+              tx,
+              'labels',
+              (label) => ('parentId' in label ? null : withParent(label)),
+              next,
+            ),
+          (next) =>
+            updateRecords(
+              tx,
+              'templates',
+              (template) => {
+                if (!Array.isArray(template.labels)) return null;
+                const labels = template.labels as Row[];
+                if (labels.every((label) => 'parentId' in label)) return null;
+                return { ...template, labels: labels.map(withParent) };
+              },
+              next,
+            ),
+        ],
+        done,
+      );
+    },
+  },
 ];
 
 export const DB_VERSION = MIGRATIONS[MIGRATIONS.length - 1].version;
